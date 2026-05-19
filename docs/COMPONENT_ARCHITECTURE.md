@@ -16,7 +16,7 @@
 | Markdown | `@astrojs/mdx` / `remark-practice-log` / `remark-strip-activity-stat-placeholders` / `rehype-slug` / `rehype-apple-watch-gear-link` / `rehype-site-internal-links-blank` / `rehype-external-links-blank` |
 | OGP 画像 | ビルド時に `satori` + `sharp` で 1200×630 PNG を生成（`src/pages/og/blog/[...slug].png.ts`） |
 | 画像 | `astro:assets` + `sharp`（記事内は `ArticleFigure`） |
-| デプロイ | `PUBLIC_SITE_URL` / `PUBLIC_BASE_PATH`（GitHub Pages） |
+| デプロイ | GitHub Actions。`PUBLIC_SITE_URL=https://run.atohs.me`・`PUBLIC_BASE_PATH=/`（`.github/workflows/deploy.yml`） |
 | サイトマップ | `@astrojs/sitemap`（`3.1.6`・Astro 4 向け）。ビルドで `dist/sitemap-index.xml` と `sitemap-0.xml` を生成。`astro.config.mjs` の `site` に依存 |
 | robots.txt | `src/pages/robots.txt.ts`（`Sitemap:` で index を案内、`/og/` は Disallow） |
 | アクセス解析 | `SiteAnalytics.astro` + `config/analytics.ts`（GA4 `G-CVWK7M20LS`・Clarity `wtfvqup85d`）。**本番ビルドのみ**読み込み |
