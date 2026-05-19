@@ -6,6 +6,7 @@ import { formatDateYmd } from '@/utils/date';
 import { getPostListLabel } from '@/utils/post-title';
 import { getCategoryDisplayLabel, getCategoryPillModifier } from '@/utils/category-label';
 import { resolveBlogTags } from '@/utils/blog-tags';
+import { getBlogPostHref } from '@/utils/blog-post-path';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -45,7 +46,7 @@ const base = import.meta.env.BASE_URL;
         <li>
           <article class="post-row">
             <h2 class="post-row__title">
-              <a href={`${base}blog/${post.slug}/`}>
+              <a href={getBlogPostHref(base, post.slug)}>
                 {getPostListLabel(post.data)}
               </a>
             </h2>

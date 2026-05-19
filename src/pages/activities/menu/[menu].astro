@@ -9,6 +9,7 @@ import {
 } from '@/constants/activity-menus';
 import { formatDateYmd } from '@/utils/date';
 import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+import { getBlogPostHref } from '@/utils/blog-post-path';
 import { getCategoryDisplayLabel } from '@/utils/category-label';
 import { postMatchesActivityMenuSlug } from '@/utils/activity-menu';
 import { getPostListLabel } from '@/utils/post-title';
@@ -23,7 +24,7 @@ function isActivityMenuSlug(value: string): value is ActivityMenuSlug {
   return (ACTIVITY_MENU_SLUGS as readonly string[]).includes(value);
 }
 if (!raw || !isActivityMenuSlug(raw)) {
-  return Astro.redirect(`${import.meta.env.BASE_URL}blog/category/activities/`);
+  return Astro.redirect(getBlogCategoryListHref(import.meta.env.BASE_URL, 'Activities'));
 }
 
 const menuSlug = raw as ActivityMenuSlug;
@@ -42,7 +43,7 @@ const activitiesListHref = getBlogCategoryListHref(base, 'Activities');
 <BaseLayout title={pageTitle} description={description}>
   <header class="page-head">
     <p class="page-head__crumb">
-      <a href={`${base}blog/`}>記事一覧</a>
+      <a href={base}>トップ</a>
       <span class="page-head__crumb-sep" aria-hidden="true">/</span>
       <a href={activitiesListHref}>{getCategoryDisplayLabel('Activities')}</a>
       <span class="page-head__crumb-sep" aria-hidden="true">/</span>
@@ -61,7 +62,7 @@ const activitiesListHref = getBlogCategoryListHref(base, 'Activities');
           <li>
             <article class="post-row post-row--activities">
               <h2 class="post-row__title post-row__title--with-date">
-                <a href={`${base}blog/${post.slug}/`}>{getPostListLabel(post.data)}</a>
+                <a href={getBlogPostHref(base, post.slug)}>{getPostListLabel(post.data)}</a>
                 <time class="post-row__inline-date" datetime={post.data.pubDate.toISOString()}>
                   {formatDateYmd(post.data.pubDate)}
                 </time>

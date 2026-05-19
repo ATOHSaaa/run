@@ -16,7 +16,7 @@ amazonAffiliate:
   productName: On Cloud 6 WP
 ---
 
-**[New Balance FuelCell Propel v5](/blog/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)** より前に買った **On Cloud 6 WP** のメモです。いまは **ほぼ完全に街履き用**。実家に帰るときなどに履いて帰り、少しだけランニングする、という使い方が多いです。
+**[New Balance FuelCell Propel v5](/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)** より前に買った **On Cloud 6 WP** のメモです。いまは **ほぼ完全に街履き用**。実家に帰るときなどに履いて帰り、少しだけランニングする、という使い方が多いです。
 
 ## 購入・いまの使い方
 
@@ -35,8 +35,8 @@ amazonAffiliate:
 
 - 長い距離を走るようになる頃には、もう Propel v5 を買っていた
 - この靴で **長く走ったことはなく**、せいぜい **5km くらい** まで
-- **[Propel v5](/blog/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)** に比べるとソールが **平たい** 感じで、足が前に進む感覚はあまりない
-- いまランニングのメインは **[Fresh Foam 1080 v14](/blog/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** と Propel v5
+- **[Propel v5](/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)** に比べるとソールが **平たい** 感じで、足が前に進む感覚はあまりない
+- いまランニングのメインは **[Fresh Foam 1080 v14](/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** と Propel v5
 
 ## 街履きとして
 

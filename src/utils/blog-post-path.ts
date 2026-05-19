@@ -25,5 +25,6 @@ export function assertBlogEntryFolder(entry: CollectionEntry<'blog'>): void {
 }
 
 export function getBlogPostHref(base: string, slug: string): string {
-  return `${base}blog/${slug}/`;
+  const root = base.endsWith('/') ? base : `${base}/`;
+  return `${root}${slug}/`;
 }

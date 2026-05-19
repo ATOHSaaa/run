@@ -1,7 +1,7 @@
 ---
 title: ブログを開設しました
 description: 体重100kgからサブ3を目指すブログを開設しました。
-pubDate: 2026-05-14
+pubDate: 2026-05-19
 category: News
 tags:
   - お知らせ

@@ -135,7 +135,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 **使用箇所**:
 
 - `src/pages/index.astro`（トップ Activities）
-- `src/pages/blog/[...slug].astro`（Activities 記事末尾）
+- `src/pages/[...slug].astro`（Activities 記事末尾）
 
 ---
 
@@ -191,10 +191,9 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 | ルート | ファイル | 主な構成 |
 |--------|----------|----------|
 | `/` | `pages/index.astro` | `BaseLayout` + Tips / Gears / Activities ブロック + `HomeProfile` + `ActivitiesCalendar` |
-| `/blog/` | `pages/blog/index.astro` | 記事一覧（`SHOW_PRACTICE_DIARY` で Activities 除外可） |
-| `/blog/{slug}/` | `pages/blog/[...slug].astro` | 記事詳細・練習ログ・目次・`AmazonAffiliateCard`・Activities カレンダー |
-| `/blog/category/{category}/` | `pages/blog/category/[category].astro` | カテゴリ別一覧 |
-| `/blog/activities/menu/{menu}/` | `pages/blog/activities/menu/[menu].astro` | 活動種別（ジョギング等）で Activities 絞り込み |
+| `/category/{category}/` | `pages/category/[category].astro` | カテゴリ別一覧 |
+| `/{slug}/` | `pages/[...slug].astro` | 記事詳細（例: `/gears/.../`・`/tips/.../`）・練習ログ・目次・`AmazonAffiliateCard` |
+| `/activities/menu/{menu}/` | `pages/activities/menu/[menu].astro` | 活動種別で Activities 絞り込み |
 | `/tags/` | `pages/tags/index.astro` | タグ一覧 |
 | `/tags/{tag}/` | `pages/tags/[tag].astro` | タグ別記事 |
 | `/search/` | `pages/search/index.astro` | クライアント検索 |
@@ -203,7 +202,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 | `/tools/marathon-goal/` | `pages/tools/marathon-goal.astro` | フル目標タイム入力 → 1kmペース / 5km / 10km / 20km 換算（`src/utils/marathon-pace-calculator.ts`、クライアント計算） |
 | `/404` | `pages/404.astro` | 404 |
 
-記事 URL 例: `/blog/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/`
+記事 URL 例: `/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/`。旧 `/blog/...` は `astro.config.mjs` の `redirects` で転送。
 
 ---
 
@@ -214,7 +213,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 3. **練習ログ**（Activities 中心）
    - 本文先頭の ` ```practice-log ` フェンスを `remark-practice-log` が除去
    - HTML は `practice-log-parse.mjs` → `article__practice-log` として本文上に表示
-   - 活動名（ジョギング等）は `/blog/activities/menu/{slug}/` へリンク
+   - 活動名（ジョギング等）は `/activities/menu/{slug}/` へリンク
 4. **目次**: `extractTocFromMarkdown` → デスクトップで右サイドバー
 5. **Gears**: `amazonAffiliate` フロントマター → `AmazonAffiliateCard`
 6. **Activities**: `SHOW_ACTIVITIES_CALENDAR` 時、末尾に `ActivitiesCalendar`
@@ -294,7 +293,7 @@ import photo from '@/assets/images/activities/example.jpg';
 | **frontmatter** | `title`, `gearName`, `description`, `pubDate`, `category: Gears`, `gearAsin`, `tags`。末尾カード用に **`amazonAffiliate`**（`href`・`asin`・`label`・`productName`）を付ける。 |
 | **本文の語り** | 一人称は **「僕」**。「このブログ主」は使わない。 |
 | **見出しの例** | 用途に応じて組み立てる。よく使うもの: `## 購入・走行距離` または `## 購入・いまの使い方`、`## 選んだ理由`、`## 履き心地`、`## 使い方`、`## 他の靴との住み分け`、`## こんな人におすすめ`、`## サイズ感`、`## まとめ`。 |
-| **相互リンク** | 関連 Gears は `/blog/gears/{slug}/` でリンク。Propel ↔ 1080 ↔ Cloud 6 WP など住み分けがわかるようにする。 |
+| **相互リンク** | 関連 Gears は `/gears/{slug}/` でリンク（`/blog/` プレフィックスなし）。Propel ↔ 1080 ↔ Cloud 6 WP など住み分けがわかるようにする。 |
 | **Amazon カード** | `amazonAffiliate` を書くと記事詳細の **本文末尾**（`[...slug].astro`）に `AmazonAffiliateCard` が自動表示。手書きのカード HTML は不要。 |
 | **更新の進め方** | 本文を書く前にユーザーへ用途・購入経緯・他靴との関係などを質問してから反映する（エージェント向け）。 |
 | **表** | 持ち物の対応などは Markdown 表でよい（上記 GFM）。 |
@@ -339,8 +338,8 @@ import photo from '@/assets/images/activities/example.jpg';
 ## Markdown・リンクの慣習
 
 - **外部リンク**（`http://` / `https://`）: `rehype-external-links-blank` で `target="_blank"` + `rel="noopener noreferrer"`（Amazon アフィリエイトは `sponsored` を追加）
-- **サイト内リンク**（`/` で始まり `//` ではないパス）: `rehype-site-internal-links-blank` で `target="_blank"`（**Gears 記事 `/blog/gears/` へのリンクは同一タブ**）。記事本文のサイト内リンクは太字にしない（`global.css`）
-- **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/blog/gears/2026-05-15-gears-apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）
+- **サイト内リンク**（`/` で始まり `//` ではないパス）: `rehype-site-internal-links-blank` で `target="_blank"`（**Gears 記事 `/gears/` へのリンクは同一タブ**）。記事本文のサイト内リンクは太字にしない（`global.css`）
+- **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/gears/2026-05-15-gears-apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）
 
 ### 記事 OGP 画像（`/og/blog/{slug}.png`）
 
@@ -353,8 +352,8 @@ import photo from '@/assets/images/activities/example.jpg';
 
 プレビュー: ローカル `http://localhost:4321/og/blog/{slug}.png`、記事 URL を [opengraph.xyz](https://www.opengraph.xyz/) や [Meta Sharing Debugger](https://developers.facebook.com/tools/debug/) に渡す。
 - **Amazon 商品リンク**: 通常 URL を書くと `rehype-amazon-affiliate-links` が `AMAZON_ASSOCIATE_TAG` 付き URL に変換（`rel="sponsored"`）
-- **Gears 相互リンク**: Markdown で `[商品名](/blog/gears/.../)`
-- **練習ログの活動名**: 自動で `/blog/activities/menu/{jogging|trail-run|trekking}/`
+- **Gears 相互リンク**: Markdown で `[商品名](/gears/.../)`
+- **練習ログの活動名**: 自動で `/activities/menu/{jogging|trail-run|trekking}/`
 
 ---
 

@@ -11,6 +11,7 @@ import { SHOW_ACTIVITIES_CALENDAR, SHOW_PRACTICE_DIARY } from '@/config/features
 import { formatDateYmd } from '@/utils/date';
 import { getGearDisplayName, getPostDisplayTitle } from '@/utils/post-title';
 import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+import { getBlogPostHref } from '@/utils/blog-post-path';
 import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
 import { splitGearCardTitle } from '@/utils/gear-card-title';
 import { getGearTypeFromTags } from '@/utils/gear-type';
@@ -73,7 +74,7 @@ const homeDescription = SHOW_PRACTICE_DIARY
             {tipsPosts.map((post) => (
               <li>
                 <PostCard
-                  href={`${base}blog/${post.slug}/`}
+                  href={getBlogPostHref(base, post.slug)}
                   title={getPostDisplayTitle(post.data)}
                   pubDate={post.data.pubDate}
                   headingLevel="h3"
@@ -144,7 +145,7 @@ const homeDescription = SHOW_PRACTICE_DIARY
               const gearType = getGearTypeFromTags(post.data.tags);
               return (
               <li>
-                <a class="gears-card" href={`${base}blog/${post.slug}/`}>
+                <a class="gears-card" href={getBlogPostHref(base, post.slug)}>
                   <span class="gears-card__inner">
                     <img
                       class="gears-card__thumb"
@@ -253,7 +254,7 @@ const homeDescription = SHOW_PRACTICE_DIARY
                 <li class="activities-timeline__item">
                   <article class="activities-timeline__article">
                     <h3 class="activities-timeline__title">
-                      <a href={`${base}blog/${post.slug}/`}>
+                      <a href={getBlogPostHref(base, post.slug)}>
                         {getPostDisplayTitle(post.data)}
                       </a>
                       <time

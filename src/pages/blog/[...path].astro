@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import { ACTIVITY_MENU_SLUGS } from '@/constants/activity-menus';
+import { BLOG_CATEGORY_SLUG, type BlogCategory } from '@/utils/blog-category-path';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const base = import.meta.env.BASE_URL;
+  const root = base.endsWith('/') ? base : `${base}/`;
+
+  const paths: { params: { path: string }; redirect: string }[] = [];
+
+  for (const post of posts) {
+    paths.push({
+      params: { path: post.slug },
+      redirect: `${root}${post.slug}/`,
+    });
+  }
+
+  for (const category of Object.keys(BLOG_CATEGORY_SLUG) as BlogCategory[]) {
+    const slug = BLOG_CATEGORY_SLUG[category];
+    paths.push({
+      params: { path: `category/${slug}` },
+      redirect: `${root}category/${slug}/`,
+    });
+  }
+
+  for (const menu of ACTIVITY_MENU_SLUGS) {
+    paths.push({
+      params: { path: `activities/menu/${menu}` },
+      redirect: `${root}activities/menu/${menu}/`,
+    });
+  }
+
+  return paths;
+}
+---

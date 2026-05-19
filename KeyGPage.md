@@ -10,4 +10,4 @@
 ## 公開ファイル（本番）
 
 - **`src/content/blog/activities/2026-05-19-diary-activities.md`** ← ブログに載るファイル
-- プレビュー: `/blog/activities/2026-05-19-diary-activities/`
+- プレビュー: `/activities/2026-05-19-diary-activities/`

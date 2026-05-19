@@ -115,7 +115,7 @@ const searchIndex = visible.map((p) => {
     list.innerHTML = matches
       .map(
         (entry) =>
-          `<li class="search-results__item"><a class="search-results__link" href="${base}blog/${entry.slug}/"><span class="search-results__title">${escapeHtml(entry.title)}</span><span class="search-results__meta">${escapeHtml(entry.category)}</span></a><p class="search-results__desc">${escapeHtml(entry.description)}</p></li>`,
+          `<li class="search-results__item"><a class="search-results__link" href="${base}${entry.slug}/"><span class="search-results__title">${escapeHtml(entry.title)}</span><span class="search-results__meta">${escapeHtml(entry.category)}</span></a><p class="search-results__desc">${escapeHtml(entry.description)}</p></li>`,
       )
       .join('');
   })();

@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL;
 const tipsHref = getBlogCategoryListHref(base, 'Tips');
 const gearsHref = getBlogCategoryListHref(base, 'Gears');
 const newsHref = getBlogCategoryListHref(base, 'News');
-const blogIndexHref = `${base}blog/`;
+const homeHref = base;
 const activitiesHref = getBlogCategoryListHref(base, 'Activities');
 ---
 
@@ -55,7 +55,7 @@ const activitiesHref = getBlogCategoryListHref(base, 'Activities');
         <strong><a href={activitiesHref}>Activities</a></strong> — ジョギングやトレッキングなど、運動した日のメモ。記事の先頭に距離・ペースなどの一行サマリー（練習ログ）があり、{
           SHOW_ACTIVITIES_CALENDAR ? 'トップや各記事の下では月カレンダーからも辿れます。' : 'トップから直近の記事を読めます。'
         }
-        活動の種類（例: ジョギング）をクリックすると、同じ種目の記録一覧にも飛べます。入口は<a href={activitiesHref}>Activities 一覧</a>や<a href={`${base}#heading-diary`}>トップの Activities ブロック</a>が中心です（<a href={blogIndexHref}>記事一覧</a>には含めていません）。
+        活動の種類（例: ジョギング）をクリックすると、同じ種目の記録一覧にも飛べます。入口は<a href={activitiesHref}>Activities 一覧</a>や<a href={`${base}#heading-diary`}>トップの Activities ブロック</a>が中心です（<a href={homeHref}>トップの記事一覧</a>には含めていません）。
       </li>
       <li>
         <strong><a href={tipsHref}>Tips</a></strong> — 減量やランニングのなかで得たコツ・気づき。整理して残しておくメモ向けです。
@@ -70,7 +70,7 @@ const activitiesHref = getBlogCategoryListHref(base, 'Activities');
 
     <h2>そのほかのページ</h2>
     <ul>
-      <li><a href={`${base}blog/`}>記事一覧</a> — Tips・Gears・お知らせの一覧</li>
+      <li><a href={getBlogCategoryListHref(base, 'Tips')}>Tips 一覧</a>、<a href={getBlogCategoryListHref(base, 'Gears')}>Gears 一覧</a>、<a href={getBlogCategoryListHref(base, 'News')}>News 一覧</a></li>
       <li><a href={`${base}search/`}>記事を検索</a> — タイトルや説明からキーワード検索</li>
       <li><a href={`${base}tags/`}>タグ一覧</a> — タグから記事を探す</li>
       <li><a href={`${base}profile/`}>管理人プロフィール</a> — プロフィールの詳細</li>

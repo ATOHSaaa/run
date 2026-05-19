@@ -17,8 +17,9 @@ import {
 } from '@/utils/blog-category-path';
 import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
 import { resolveGearCoverImageUrl } from '@/utils/resolve-gear-cover-image';
-import { prefetchAmazonProductImages } from '../../../../amazon-creators-products.mjs';
+import { prefetchAmazonProductImages } from '../../../amazon-creators-products.mjs';
 import { resolveBlogTags } from '@/utils/blog-tags';
+import { getBlogPostHref } from '@/utils/blog-post-path';
 
 export async function getStaticPaths() {
   return (Object.keys(BLOG_SLUG_TO_CATEGORY) as BlogCategorySlug[]).map((slug) => ({
@@ -66,7 +67,7 @@ const description = `「${label}」カテゴリの記事一覧です。`;
 <BaseLayout title={pageTitle} description={description}>
   <header class="page-head">
     <p class="page-head__crumb">
-      <a href={`${base}blog/`}>記事一覧</a>
+      <a href={base}>トップ</a>
       <span class="page-head__crumb-sep" aria-hidden="true">/</span>
       <span>{label}</span>
     </p>
@@ -82,7 +83,7 @@ const description = `「${label}」カテゴリの記事一覧です。`;
           category === 'Tips' ? (
             <li>
               <PostCard
-                href={`${base}blog/${post.slug}/`}
+                href={getBlogPostHref(base, post.slug)}
                 title={getPostListLabel(post.data)}
                 pubDate={post.data.pubDate}
                 tags={resolveBlogTags(post)}
@@ -93,7 +94,7 @@ const description = `「${label}」カテゴリの記事一覧です。`;
             <li>
               <article class="post-row post-row--activities">
                 <h2 class="post-row__title post-row__title--with-date">
-                  <a href={`${base}blog/${post.slug}/`}>
+                  <a href={getBlogPostHref(base, post.slug)}>
                     {getPostListLabel(post.data)}
                   </a>
                   <time class="post-row__inline-date" datetime={post.data.pubDate.toISOString()}>
@@ -128,7 +129,7 @@ const description = `「${label}」カテゴリの記事一覧です。`;
                       decoding="async"
                     />
                     <h2 class="post-row__title">
-                      <a href={`${base}blog/${post.slug}/`}>
+                      <a href={getBlogPostHref(base, post.slug)}>
                         {getPostListLabel(post.data)}
                       </a>
                     </h2>
@@ -156,7 +157,7 @@ const description = `「${label}」カテゴリの記事一覧です。`;
               <article class="post-row">
                 <div class="post-row__main">
                   <h2 class="post-row__title">
-                    <a href={`${base}blog/${post.slug}/`}>
+                    <a href={getBlogPostHref(base, post.slug)}>
                       {getPostListLabel(post.data)}
                     </a>
                   </h2>

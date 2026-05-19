@@ -25,7 +25,7 @@ amazonAffiliate:
 
 ## 前のシューズからの買い替え
 
-- 1足目は **[New Balance FuelCell Propel v5](/blog/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)**（**2025年7月** 購入）
+- 1足目は **[New Balance FuelCell Propel v5](/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)**（**2025年7月** 購入）
 - **熊本城マラソン**（2026年2月）までは、ずっと Propel v5 一足で走っていた
 - 熊本城マラソンでは、**20km 以降**はそれなりに速いペース（**5分30秒** くらい）で走れていた
 - そのあとは **めちゃめちゃ足が痛くなって**、全然走れなくなってしまった
@@ -45,9 +45,9 @@ amazonAffiliate:
 
 ## 他の靴との住み分け
 
-- **[Salomon SPEEDCROSS 6](/blog/gears/2026-05-15-gears-salomon-speedcross-6/)** … トレラン用に購入
-- **[On Cloud 6 WP](/blog/gears/2026-05-15-gears-on-cloud-6-wp/)** … 完全に街履き用
-- **[New Balance FuelCell Propel v5](/blog/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)**
+- **[Salomon SPEEDCROSS 6](/gears/2026-05-15-gears-salomon-speedcross-6/)** … トレラン用に購入
+- **[On Cloud 6 WP](/gears/2026-05-15-gears-on-cloud-6-wp/)** … 完全に街履き用
+- **[New Balance FuelCell Propel v5](/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)**
   - スピードを出したい練習のとき
   - Fresh Foam 1080 を洗ってまだ乾いていないときの代わり
 

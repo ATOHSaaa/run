@@ -16,7 +16,7 @@ amazonAffiliate:
   productName: New Balance FuelCell Propel v5
 ---
 
-ランニングシューズとして最初に買った **New Balance FuelCell Propel v5** のメモです。いまは **[Fresh Foam 1080 v14](/blog/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** がメインですが、Propel もまだ現役です。
+ランニングシューズとして最初に買った **New Balance FuelCell Propel v5** のメモです。いまは **[Fresh Foam 1080 v14](/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** がメインですが、Propel もまだ現役です。
 
 ## 購入・走行距離
 
@@ -34,7 +34,7 @@ amazonAffiliate:
 
 ## 前のシューズとの比較
 
-Propel v5 を買う前は、**[On Cloud 6 WP](/blog/gears/2026-05-15-gears-on-cloud-6-wp/)** で走っていました。Propel に替えてからは、**圧倒的に走りやすい**と感じています。いま Cloud 6 WP は街履き用です。
+Propel v5 を買う前は、**[On Cloud 6 WP](/gears/2026-05-15-gears-on-cloud-6-wp/)** で走っていました。Propel に替えてからは、**圧倒的に走りやすい**と感じています。いま Cloud 6 WP は街履き用です。
 
 ## 履き心地
 
@@ -50,9 +50,9 @@ Propel v5 を買う前は、**[On Cloud 6 WP](/blog/gears/2026-05-15-gears-on-cl
 
 ## 使い方
 
-- **[熊本城マラソン](/blog/activities/)**（2026年2月）までは、ずっとこの一足で走っていた
+- **[熊本城マラソン](/category/activities/)**（2026年2月）までは、ずっとこの一足で走っていた
 - スピードを出したい練習・テンポ走向け
-- **[1080 v14](/blog/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** と2足持ちするなら、**ちょっと早めに走りたい日**に Propel を履くイメージ
+- **[1080 v14](/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** と2足持ちするなら、**ちょっと早めに走りたい日**に Propel を履くイメージ
 - **山道**を走りたいときは、Propel より 1080 の方が向いているかもしれない
 
 ## 1080 v14 に買い替えたあと

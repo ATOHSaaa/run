@@ -30,12 +30,12 @@ function pathOnly(href) {
 
 /** @param {string} href */
 function isGearsArticlePath(href) {
-  return pathOnly(href).includes('/blog/gears/');
+  return pathOnly(href).includes('/gears/');
 }
 
 /**
  * 記事 Markdown のサイト内へのパスリンク（`/foo` で `//` ではじまらない）に `target="_blank"` を付ける。
- * ギア記事（`/blog/gears/`）へのリンクは同一タブで開く。
+ * ギア記事（`/gears/`）へのリンクは同一タブで開く。
  */
 export default function rehypeSiteInternalLinksBlank() {
   /** @param {import('hast').Root} tree */

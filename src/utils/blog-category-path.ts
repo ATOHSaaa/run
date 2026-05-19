@@ -2,7 +2,7 @@ import type { CollectionEntry } from 'astro:content';
 
 export type BlogCategory = CollectionEntry<'blog'>['data']['category'];
 
-/** URL セグメント（`blog/category/[slug]/`） */
+/** URL セグメント（`category/[slug]/`） */
 export const BLOG_CATEGORY_SLUG = {
   Activities: 'activities',
   Tips: 'tips',
@@ -22,5 +22,6 @@ export const BLOG_SLUG_TO_CATEGORY: Record<BlogCategorySlug, BlogCategory> = {
 
 export function getBlogCategoryListHref(base: string, category: BlogCategory): string {
   const slug = BLOG_CATEGORY_SLUG[category];
-  return `${base}blog/category/${slug}/`;
+  const root = base.endsWith('/') ? base : `${base}/`;
+  return `${root}category/${slug}/`;
 }

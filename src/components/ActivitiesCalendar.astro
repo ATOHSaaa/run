@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import { activityIconUrl, registeredActivities } from '@/constants/activity-icons';
 import { SHOW_ACTIVITIES_CALENDAR } from '@/config/features';
 import { getPostDisplayTitle } from '@/utils/post-title';
+import { getBlogPostHref } from '@/utils/blog-post-path';
 import {
   buildDiaryCalendarGrid,
   enumerateDiaryMonthsUtc,
@@ -147,7 +148,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
                                       <li class="diary-calendar__entry">
                                         <a
                                           class="diary-calendar__link"
-                                          href={`${base}blog/${post.slug}/`}
+                                          href={getBlogPostHref(base, post.slug)}
                                         >
                                           {getPostDisplayTitle(post.data)}
                                         </a>

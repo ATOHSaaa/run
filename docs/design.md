@@ -210,7 +210,7 @@ Tips / Gears / Activities ブロック:
 | 記事 OGP 画像 | 1200×630 PNG（`og/blog/{slug}.png`）。Tips/Activities はブログ名・カテゴリ・タグ・タイトル。Gears は商品写真入り |
 | 外部リンク（Markdown） | **新しいタブ**（`rehype-external-links-blank`） |
 | サイト内（Markdown） | 基本 **新しいタブ**（`rehype-site-internal-links-blank`） |
-| 例外: `/blog/gears/` | **同一タブ** |
+| 例外: `/gears/` | **同一タブ** |
 | 練習ログの活動名 | 同一タブで活動別一覧へ |
 | Amazon カード | 新しいタブ、`rel="sponsored"` |
 | フォーカス | `outline: 2px solid var(--color-accent)`（ボタン・pill 等） |
@@ -262,7 +262,7 @@ Tips / Gears / Activities ブロック:
 | ヘッダー・マーキー | `src/components/Header.astro` |
 | フッター | `src/components/Footer.astro` |
 | トップ・Gears グリッド | `src/pages/index.astro` |
-| 記事詳細・pill・練習ログ・目次 | `src/pages/blog/[...slug].astro` |
+| 記事詳細・pill・練習ログ・目次 | `src/pages/[...slug].astro` |
 | カレンダー | `src/components/ActivitiesCalendar.astro` |
 | Amazon カード | `src/components/AmazonAffiliateCard.astro` |
 | 区切り線 | `src/components/WaveDivider.astro` |

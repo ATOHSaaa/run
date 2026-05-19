@@ -37,5 +37,5 @@ export function getActivityMenuListHref(
   const slug = ACTIVITY_MENU_SLUG_BY_MODIFIER[activityMod];
   if (!slug) return null;
   const root = base.endsWith('/') ? base : `${base}/`;
-  return `${root}blog/activities/menu/${slug}/`;
+  return `${root}activities/menu/${slug}/`;
 }
