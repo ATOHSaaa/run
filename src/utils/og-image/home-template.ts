@@ -1,6 +1,5 @@
 import { OG_COLORS, SITE_TITLE } from './constants';
 import { readPublicImageDataUrl } from './public-image';
-import { splitTitleLines } from './truncate';
 
 const FONT = 'Noto Sans JP';
 const SITE_MARK_PATH = 'images/runner-accent.png';
@@ -25,8 +24,6 @@ function ogEl(
 
 export async function buildHomeOgTemplate(): Promise<OgNode> {
   const markSrc = await readPublicImageDataUrl(SITE_MARK_PATH);
-  const titleLines = splitTitleLines(SITE_TITLE, 16);
-  const titleFontSize = titleLines.length > 1 ? 48 : 56;
 
   const markChildren: OgChildren = markSrc
     ? [
@@ -69,26 +66,16 @@ export async function buildHomeOgTemplate(): Promise<OgNode> {
       ogEl(
         'div',
         {
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 10,
+          fontFamily: FONT,
+          fontSize: 44,
+          fontWeight: 700,
+          color: '#ffffff',
+          lineHeight: 1.3,
+          letterSpacing: '0.02em',
           textAlign: 'center',
+          whiteSpace: 'nowrap',
         },
-        titleLines.map((line) =>
-          ogEl(
-            'div',
-            {
-              fontFamily: FONT,
-              fontSize: titleFontSize,
-              fontWeight: 700,
-              color: '#ffffff',
-              lineHeight: 1.3,
-              letterSpacing: '0.03em',
-            },
-            line,
-          ),
-        ),
+        SITE_TITLE,
       ),
     ],
   );
