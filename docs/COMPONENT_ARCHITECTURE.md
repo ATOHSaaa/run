@@ -343,9 +343,16 @@ import photo from '@/assets/images/activities/example.jpg';
 - **サイト内リンク**（`/` で始まり `//` ではないパス）: `rehype-site-internal-links-blank` で `target="_blank"`（**Gears 記事 `/gears/` へのリンクは同一タブ**）。記事本文のサイト内リンクは太字にしない（`global.css`）
 - **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/gears/2026-05-15-gears-apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）
 
-### 記事 OGP 画像（`/og/blog/{slug}.png`）
+### OGP 画像（`src/utils/og-image/`）
 
-ビルド時に `src/utils/og-image/` で PNG を生成し、記事詳細の `og:image` に渡す。
+ビルド時に `satori` + `sharp` で 1200×630 PNG を生成する。
+
+| ルート | 用途 |
+|--------|------|
+| `/og/home.png` | トップ（`index.astro`）。青背景（`#1d4ed8`）にサイトマーク（`public/images/runner-accent.png`）とブログタイトル |
+| `/og/blog/{slug}.png` | 記事詳細 |
+
+記事 OGP のレイアウト:
 
 | カテゴリ | レイアウト |
 |----------|------------|

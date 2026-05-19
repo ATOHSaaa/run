@@ -17,6 +17,7 @@ import { splitGearCardTitle } from '@/utils/gear-card-title';
 import { getGearTypeFromTags } from '@/utils/gear-type';
 import { resolveGearCoverImageUrl } from '@/utils/resolve-gear-cover-image';
 import { prefetchAmazonProductImages } from '../../amazon-creators-products.mjs';
+import { getHomeOgImageUrl } from '@/utils/og-image/home-og-url';
 
 const posts = sortBlogPostsByPubDateDesc(await getCollection('blog'));
 
@@ -51,9 +52,14 @@ const homeDescription = SHOW_PRACTICE_DIARY
   ? 'ダイエットとランニング初心者向け。Activities と減量・走り方のTipsを届けます。'
   : 'ダイエットとランニング初心者向け。Activities、減量・走り方のTips、お気に入りのもの（Gears）を届けます。';
 
+const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
 ---
 
-<BaseLayout title="体重100kgからサブ3を目指すブログ" description={homeDescription}>
+<BaseLayout
+  title="体重100kgからサブ3を目指すブログ"
+  description={homeDescription}
+  ogImage={ogImage}
+>
   <h1 class="sr-only">体重100kgからサブ3を目指すブログ</h1>
 
   <div class="home-sections">

@@ -207,7 +207,7 @@ Tips / Gears / Activities ブロック:
 | 種類 | 挙動 |
 |------|------|
 | 通常リンク（本文） | accent 色、下線、ホバーで下線をやや太く（太字にはしない） |
-| 記事 OGP 画像 | 1200×630 PNG（`og/blog/{slug}.png`）。Tips/Activities はブログ名・カテゴリ・タグ・タイトル。Gears は商品写真入り |
+| OGP 画像 | 1200×630 PNG。トップは `og/home.png`（青背景・マーク・タイトル）。記事は `og/blog/{slug}.png`（Tips/Activities はブログ名・カテゴリ・タグ・タイトル。Gears は商品写真入り） |
 | 外部リンク（Markdown） | **新しいタブ**（`rehype-external-links-blank`） |
 | サイト内（Markdown） | 基本 **新しいタブ**（`rehype-site-internal-links-blank`） |
 | 例外: `/gears/` | **同一タブ** |
