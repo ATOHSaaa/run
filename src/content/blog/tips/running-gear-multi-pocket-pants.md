@@ -48,7 +48,7 @@ amazonAffiliate:
 
 ## Tigora マルチポケットパンツ
 
-そこで購入したのが、[Tigora のマルチポケットパンツ](https://amazon.co.jp/dp/B0GQXHLN8P)だ。詳しい使用感は **[Tigora マルチポケットパンツ](/gears/2026-05-15-gears-tigora-multi-pocket-pants/)** の Gears 記事にも書いている。
+そこで購入したのが、[Tigora のマルチポケットパンツ](https://amazon.co.jp/dp/B0GQXHLN8P)だ。詳しい使用感は **[Tigora マルチポケットパンツ](/gears/tigora-multi-pocket-pants/)** の Gears 記事にも書いている。
 
 Tigora はアルペングループのオリジナルブランドで、さまざまな製品を非常に安価に提供している。このマルチポケットパンツは、1枚あたり税込1,999円。アルペンオンラインストアや Amazon などでも購入できる。
 

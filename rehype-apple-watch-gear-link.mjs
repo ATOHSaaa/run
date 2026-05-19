@@ -1,7 +1,7 @@
 import { visitParents } from 'unist-util-visit-parents';
 
 const PHRASE = 'Apple Watch';
-const GEARS_HREF = '/gears/2026-05-15-gears-apple-watch-ultra-2/';
+const GEARS_HREF = '/gears/apple-watch-ultra-2/';
 const EXCLUDE_FILE_RE = /[/\\]2026-05-15-gears-apple-watch-ultra-2\.mdx?$/i;
 
 const SKIP_ANCESTOR_TAGS = new Set(['a', 'code', 'pre', 'script', 'style', 'svg']);

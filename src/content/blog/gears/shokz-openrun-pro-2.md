@@ -18,7 +18,7 @@ amazonAffiliate:
 
 **2025年4月** の Amazon プライムデーで安くなっていたのをきっかけに買った **Shokz OpenRun Pro 2** です。いまも **だいたい毎回のラン** で使っています。屋外ランでも、トレッドミルでも付けています。
 
-くわしいレビュー（OpenComm やカナル型からの乗り換え、約300km 時点の感想など）は **[Tips：Shokz OpenRun Pro 2 のレビュー](/tips/2026-05-19-tips-shokz-openrun-pro-2-review/)** に書いています。
+くわしいレビュー（OpenComm やカナル型からの乗り換え、約300km 時点の感想など）は **[Tips：Shokz OpenRun Pro 2 のレビュー](/tips/shokz-openrun-pro-2-review/)** に書いています。
 
 ## 購入・いまの使い方
 

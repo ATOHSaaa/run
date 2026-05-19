@@ -204,7 +204,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 | `/tools/marathon-goal/` | `pages/tools/marathon-goal.astro` | フル目標タイム入力 → 1kmペース / 5km / 10km / 20km 換算（`src/utils/marathon-pace-calculator.ts`、クライアント計算） |
 | `/404` | `pages/404.astro` | 404 |
 
-記事 URL 例: `/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/`。旧 `/blog/...` は `astro.config.mjs` の `redirects` で転送。
+記事 URL 例: `/gears/new-balance-fresh-foam-1080-v14/`（Tips / Gears のファイル名は日付なし・slug も日付なし。旧 `/{category}/YYYY-MM-DD-{category}-.../` と旧 `/blog/...` は `blog-slug.mjs` 経由で `astro.config.mjs` の `redirects` に登録）。
 
 ---
 
@@ -341,7 +341,7 @@ import photo from '@/assets/images/activities/example.jpg';
 
 - **外部リンク**（`http://` / `https://`）: `rehype-external-links-blank` で `target="_blank"` + `rel="noopener noreferrer"`（Amazon アフィリエイトは `sponsored` を追加）
 - **サイト内リンク**（`/` で始まり `//` ではないパス）: `rehype-site-internal-links-blank` で `target="_blank"`（**Gears 記事 `/gears/` へのリンクは同一タブ**）。記事本文のサイト内リンクは太字にしない（`global.css`）
-- **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/gears/2026-05-15-gears-apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）
+- **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/gears/apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）
 
 ### OGP 画像（`src/utils/og-image/`）
 

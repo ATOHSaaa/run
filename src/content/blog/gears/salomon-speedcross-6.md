@@ -27,7 +27,7 @@ amazonAffiliate:
 
 ## 選んだ理由
 
-- それまでは **[On Cloud 6 WP](/gears/2026-05-15-gears-on-cloud-6-wp/)** などで登っていた
+- それまでは **[On Cloud 6 WP](/gears/on-cloud-6-wp/)** などで登っていた
 - 足場が **泥** のとき、どうしても **グリップが効かない** 感じがあった
 - もっとグリップの効く靴が欲しかった
 - サロモンの **別モデル** も見たが、SPEEDCROSS 6 はグリップが効きそうで良さそうだった
@@ -41,8 +41,8 @@ amazonAffiliate:
 
 ## 他の靴との住み分け
 
-- **[Fresh Foam 1080 v14](/gears/2026-05-15-gears-new-balance-fresh-foam-1080-v14/)** … ロードのジョギング・ロング走
-- **[FuelCell Propel v5](/gears/2026-05-15-gears-new-balance-fuelcell-propel-v5/)** … スピードを出したい練習
+- **[Fresh Foam 1080 v14](/gears/new-balance-fresh-foam-1080-v14/)** … ロードのジョギング・ロング走
+- **[FuelCell Propel v5](/gears/new-balance-fuelcell-propel-v5/)** … スピードを出したい練習
 - **On Cloud 6 WP** … 街履き（以前は登山にも使っていた）
 - **SPEEDCROSS 6** … 山・トレイル。低めの山はトレラン、高い山や長い距離はゆっくりトレッキング、という方針
 
