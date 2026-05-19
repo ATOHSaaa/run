@@ -23,6 +23,7 @@ pnpm-debug.log*
 # IDE
 .idea
 .vscode
+.cursor/rules
 
 # note からのエクスポート（参照用・リポジトリには含めない）
 note-export/
