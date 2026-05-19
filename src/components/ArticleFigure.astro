@@ -1,0 +1,41 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string;
+  /** `Image` の widths。未指定時は記事本文幅向け */
+  widths?: number[];
+}
+
+const { src, alt, caption, widths } = Astro.props;
+
+const isPortrait = src.height > src.width;
+
+/** 横長・正方形: 本文幅いっぱい。縦長: スクリーンショット向けに幅を抑える */
+const imageWidths = widths ?? (isPortrait ? [280, 320, 400, 480] : [400, 640, 768, 1024]);
+
+/** 本文（最大 40rem）＋ figure の左右 padding を想定 */
+const landscapeSizes =
+  '(max-width: 640px) calc(100vw - 4rem - 6vw), min(34rem, calc(100vw - 4rem))';
+const portraitSizes =
+  '(max-width: 640px) min(calc(100vw - 4rem - 6vw), 20rem), 20rem';
+const sizes = isPortrait ? portraitSizes : landscapeSizes;
+---
+
+<figure class:list={['article-figure', isPortrait && 'article-figure--portrait']}>
+  <Image
+    class="article-figure__img"
+    src={src}
+    alt={alt}
+    widths={imageWidths}
+    sizes={sizes}
+    format="webp"
+    quality={82}
+    loading="lazy"
+    decoding="async"
+  />
+  {caption && <figcaption class="article-figure__caption">{caption}</figcaption>}
+</figure>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <!-- 2本線のくねくね道（上下2区間で蛇行） -->
+  <path
+    d="M10 22Q4 17 10 12Q16 7 10 2"
+    stroke="#1d4ed8"
+    stroke-width="1.85"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M14 22Q8 17 14 12Q20 7 14 2"
+    stroke="#1d4ed8"
+    stroke-width="1.85"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

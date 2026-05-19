@@ -1,0 +1,37 @@
+---
+/**
+ * 区切り線（画面幅いっぱいの直線）。
+ * `variant` / `flip` は互換のため受け取りますが、見た目は同じです。
+ */
+interface Props {
+  variant?: 'wave' | 'squiggle';
+  flip?: boolean;
+}
+---
+
+<div class="divider divider--bleed" aria-hidden="true">
+  <div class="divider__line"></div>
+</div>
+
+<style>
+  .divider {
+    width: 100%;
+    margin-block: var(--space-lg);
+    margin-inline: 0;
+  }
+
+  .divider--bleed {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    box-sizing: border-box;
+  }
+
+  .divider__line {
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-top: 3px solid var(--color-accent);
+    opacity: 0.95;
+  }
+</style>

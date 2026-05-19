@@ -1,0 +1,92 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { getCollection } from 'astro:content';
+import { resolveBlogTags } from '@/utils/blog-tags';
+
+const posts = await getCollection('blog');
+const tagMap = new Map<string, number>();
+
+for (const post of posts) {
+  for (const tag of resolveBlogTags(post)) {
+    if (typeof tag !== 'string' || !tag.trim()) continue;
+    tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1);
+  }
+}
+
+const tags = [...tagMap.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ja'));
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="タグ一覧" description="記事に付いたタグから探せます。">
+  <header class="page-head">
+    <h1>タグ</h1>
+    <p class="page-head__sub">タグを選ぶと関連記事が表示されます。</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <ul class="tag-cloud">
+    {
+      tags.map(([tag, count]) => (
+        <li>
+          <a class="tag-pill" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+            <span class="tag-pill__label">#{tag}</span>
+            <span class="tag-pill__count">{count}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .page-head__sub {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .tag-cloud {
+    list-style: none;
+    margin: var(--space-md) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--color-accent) 22%, var(--color-border));
+    background: color-mix(in oklab, var(--color-bg) 90%, var(--color-accent-soft));
+    text-decoration: none;
+    color: color-mix(in oklab, var(--color-text) 58%, white);
+    font-size: 0.95rem;
+  }
+
+  .tag-pill:hover {
+    border-color: color-mix(in oklab, var(--color-accent) 42%, transparent);
+    color: color-mix(in oklab, var(--color-accent) 48%, white);
+  }
+
+  .tag-pill__count {
+    font-size: 0.82rem;
+    color: color-mix(in oklab, var(--color-muted) 76%, white);
+  }
+
+  .tag-pill:hover .tag-pill__count {
+    color: color-mix(in oklab, var(--color-accent) 55%, white);
+  }
+</style>

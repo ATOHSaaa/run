@@ -1,0 +1,393 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { MARATHON_PACE_DISTANCES } from '@/data/marathon-pace-chart';
+
+const base = import.meta.env.BASE_URL;
+const paceChartHref = `${base}tools/marathon-pace/`;
+---
+
+<BaseLayout
+  title="フルマラソン目標から1kmペースを換算"
+  description="フルマラソンの目標タイムを入力すると、1kmペースと 5km・10km・20km の目安タイムを算出します。"
+>
+  <header class="page-head">
+    <h1>フルマラソン目標から1kmペースを換算</h1>
+    <p class="page-head__sub">目標タイム → 1kmペース・各距離の目安</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="goal-page">
+    <p class="goal-page__lead">
+      フルマラソン（{MARATHON_PACE_DISTANCES.fullKm} km）の目標タイムを入力すると、同じ 1km
+      ペースを保った場合の各距離の目安タイムを表示します。
+      <a href={paceChartHref}>ペース一覧表</a>はこちら。
+    </p>
+
+    <form class="goal-form" id="marathon-goal-form" novalidate>
+      <div class="goal-form__block">
+        <p class="goal-form__title" id="marathon-goal-title">フルマラソン 目標タイム</p>
+        <div class="goal-form__inputs" role="group" aria-labelledby="marathon-goal-title">
+          <label class="goal-form__field">
+            <span class="goal-form__label">時間</span>
+            <input
+              class="goal-form__input"
+              type="number"
+              name="hours"
+              min="0"
+              max="12"
+              inputmode="numeric"
+              value="4"
+            />
+          </label>
+          <label class="goal-form__field">
+            <span class="goal-form__label">分</span>
+            <input
+              class="goal-form__input"
+              type="number"
+              name="minutes"
+              inputmode="numeric"
+              value="0"
+            />
+          </label>
+          <label class="goal-form__field">
+            <span class="goal-form__label">秒</span>
+            <input
+              class="goal-form__input"
+              type="number"
+              name="seconds"
+              inputmode="numeric"
+              value="0"
+            />
+          </label>
+        </div>
+      </div>
+      <p class="goal-form__hint" id="marathon-goal-hint" hidden></p>
+    </form>
+
+    <section class="goal-results" aria-live="polite" aria-atomic="true">
+      <h2 class="goal-results__heading">換算結果（一定ペース）</h2>
+      <dl class="goal-results__list">
+        <div class="goal-results__row">
+          <dt>1km</dt>
+          <dd id="result-pace-per-km">—</dd>
+        </div>
+        <div class="goal-results__row">
+          <dt>5km</dt>
+          <dd id="result-five-km">—</dd>
+        </div>
+        <div class="goal-results__row">
+          <dt>10km</dt>
+          <dd id="result-ten-km">—</dd>
+        </div>
+        <div class="goal-results__row">
+          <dt>20km</dt>
+          <dd id="result-twenty-km">—</dd>
+        </div>
+      </dl>
+    </section>
+
+    <p class="goal-page__note">
+      実際のレースではコースや給水でペースは変わります。練習ペースや中間チェックポイントの参考としてご利用ください。
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  import {
+    FULL_MARATHON_GOAL_MAX_SECONDS,
+    FULL_MARATHON_GOAL_MIN_SECONDS,
+    goalsFromFullMarathonSeconds,
+    normalizeDurationParts,
+    parseDurationToSeconds,
+  } from '@/utils/marathon-pace-calculator';
+
+  const formNode = document.getElementById('marathon-goal-form');
+  const hintNode = document.getElementById('marathon-goal-hint');
+  const paceNode = document.getElementById('result-pace-per-km');
+  const fiveKmNode = document.getElementById('result-five-km');
+  const tenKmNode = document.getElementById('result-ten-km');
+  const twentyKmNode = document.getElementById('result-twenty-km');
+
+  if (
+    !(formNode instanceof HTMLFormElement) ||
+    !hintNode ||
+    !paceNode ||
+    !fiveKmNode ||
+    !tenKmNode ||
+    !twentyKmNode
+  ) {
+    throw new Error('marathon-goal: required elements missing');
+  }
+
+  const form = formNode;
+  const hint = hintNode;
+  const paceEl = paceNode;
+  const fiveKmEl = fiveKmNode;
+  const tenKmEl = tenKmNode;
+  const twentyKmEl = twentyKmNode;
+
+  function readNumber(name: string): number {
+    const input = form.elements.namedItem(name);
+    if (!(input instanceof HTMLInputElement)) return 0;
+    const value = Number.parseInt(input.value, 10);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function writeDurationInputs(parts: { hours: number; minutes: number; seconds: number }) {
+    for (const name of ['hours', 'minutes', 'seconds'] as const) {
+      const input = form.elements.namedItem(name);
+      if (!(input instanceof HTMLInputElement)) continue;
+      const next = String(parts[name]);
+      if (input.value !== next) input.value = next;
+    }
+  }
+
+  function normalizeInputs() {
+    const parts = normalizeDurationParts(
+      readNumber('hours'),
+      readNumber('minutes'),
+      readNumber('seconds'),
+    );
+    writeDurationInputs(parts);
+    return parts;
+  }
+
+  function stepDurationField(field: 'hours' | 'minutes' | 'seconds', delta: number) {
+    const parts = normalizeDurationParts(
+      readNumber('hours') + (field === 'hours' ? delta : 0),
+      readNumber('minutes') + (field === 'minutes' ? delta : 0),
+      readNumber('seconds') + (field === 'seconds' ? delta : 0),
+    );
+    writeDurationInputs(parts);
+    update();
+  }
+
+  function handleDurationStepKey(e: KeyboardEvent) {
+    if (!(e.target instanceof HTMLInputElement)) return;
+    const name = e.target.name;
+    if (name !== 'hours' && name !== 'minutes' && name !== 'seconds') return;
+
+    const current = readNumber(name);
+
+    if (e.key === 'ArrowDown' && current === 0) {
+      e.preventDefault();
+      stepDurationField(name, -1);
+      return;
+    }
+
+    if (e.key === 'ArrowUp' && name !== 'hours' && current === 59) {
+      e.preventDefault();
+      stepDurationField(name, 1);
+    }
+  }
+
+  function setHint(message: string | null) {
+    if (message) {
+      hint.textContent = message;
+      hint.hidden = false;
+    } else {
+      hint.textContent = '';
+      hint.hidden = true;
+    }
+  }
+
+  function setResultsEmpty() {
+    paceEl.textContent = '—';
+    fiveKmEl.textContent = '—';
+    tenKmEl.textContent = '—';
+    twentyKmEl.textContent = '—';
+  }
+
+  function update() {
+    const { hours, minutes, seconds } = normalizeInputs();
+    const total = parseDurationToSeconds(hours, minutes, seconds);
+
+    if (total == null) {
+      setResultsEmpty();
+      setHint('0秒より大きい時間を入力してください。');
+      return;
+    }
+
+    if (total < FULL_MARATHON_GOAL_MIN_SECONDS || total > FULL_MARATHON_GOAL_MAX_SECONDS) {
+      setResultsEmpty();
+      setHint('フルマラソン目標は 2:00:00 〜 8:00:00 の範囲で入力してください。');
+      return;
+    }
+
+    const goals = goalsFromFullMarathonSeconds(total);
+    paceEl.textContent = goals.pacePerKm;
+    fiveKmEl.textContent = goals.fiveKm;
+    tenKmEl.textContent = goals.tenKm;
+    twentyKmEl.textContent = goals.twentyKm;
+    setHint(null);
+  }
+
+  form.addEventListener('input', update);
+  form.addEventListener('change', update);
+  form.addEventListener('keydown', handleDurationStepKey);
+  update();
+</script>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-head h1 {
+    margin: 0;
+  }
+
+  .page-head__sub {
+    margin: var(--space-xs) 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .goal-page__lead,
+  .goal-page__note {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-text);
+    line-height: var(--line-height-body);
+    text-align: justify;
+    text-justify: inter-character;
+  }
+
+  .goal-page__lead :global(a),
+  .goal-page__lead :global(a:visited) {
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--color-muted) 70%, var(--color-border));
+    text-underline-offset: 0.16em;
+  }
+
+  .goal-page__note {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .goal-form {
+    margin: 0 0 var(--space-md);
+  }
+
+  .goal-form__block {
+    margin: 0;
+  }
+
+  .goal-form__title {
+    margin: 0 0 var(--space-xs);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .goal-form__inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    align-items: flex-start;
+  }
+
+  .goal-form__field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .goal-form__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .goal-form__input {
+    width: 4.25rem;
+    padding: 0.5rem 0.35rem;
+    font: inherit;
+    font-size: 1.35rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--color-text);
+    border: 2px solid var(--color-text);
+    border-radius: 0.35rem;
+    background: var(--color-bg);
+  }
+
+  .goal-form__input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .goal-form__hint {
+    margin: var(--space-sm) 0 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #b45309;
+  }
+
+  .goal-results {
+    margin: 0 0 var(--space-md);
+  }
+
+  .goal-results__heading {
+    margin: 0 0 var(--space-sm);
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .goal-results__list {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .goal-results__row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 3px solid #000;
+    border-radius: 0.55rem;
+    background: #fff;
+  }
+
+  .goal-results__row dt {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .goal-results__row dd {
+    margin: 0;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    word-break: keep-all;
+  }
+
+  @media (min-width: 28rem) {
+    .goal-results__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 52rem) {
+    .goal-results__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+</style>

@@ -1,0 +1,55 @@
+---
+interface Props {
+  id?: string;
+  variant?: 'article' | 'sidebar';
+}
+
+const { id, variant = 'article' } = Astro.props;
+const isArticle = variant === 'article';
+---
+
+{
+  isArticle ? (
+    <div class="amazon-affiliate-section-heading-wrap">
+      <h2 id={id} class="amazon-affiliate-section-heading">
+        この記事に出てくる商品
+      </h2>
+    </div>
+  ) : (
+    <h2
+      id={id}
+      class:list={['amazon-affiliate-section-heading', 'amazon-affiliate-section-heading--sidebar']}
+    >
+      この記事に出てくる商品
+    </h2>
+  )
+}
+
+<style>
+  .amazon-affiliate-section-heading-wrap {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 2px solid color-mix(in oklab, var(--color-text) 22%, transparent);
+  }
+
+  .amazon-affiliate-section-heading {
+    margin: 0 0 var(--space-md);
+    font-size: clamp(1rem, 2.6vw, 1.1rem);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+  }
+
+  .amazon-affiliate-section-heading-wrap .amazon-affiliate-section-heading {
+    margin-bottom: var(--space-sm);
+  }
+
+  .amazon-affiliate-section-heading--sidebar {
+    margin: 0 0 var(--space-sm);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+</style>

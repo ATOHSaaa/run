@@ -1,0 +1,180 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { SHOW_PRACTICE_DIARY } from '@/config/features';
+import { getCollection } from 'astro:content';
+import { formatDateYmd } from '@/utils/date';
+import { getPostListLabel } from '@/utils/post-title';
+import { getCategoryDisplayLabel, getCategoryPillModifier } from '@/utils/category-label';
+import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
+import { resolveBlogTags } from '@/utils/blog-tags';
+
+const posts = sortBlogPostsByPubDateDesc(await getCollection('blog'));
+
+const visiblePosts = SHOW_PRACTICE_DIARY
+  ? posts
+  : posts.filter(
+      (p) =>
+        p.data.category === 'Tips' ||
+        p.data.category === 'Gears' ||
+        p.data.category === 'News',
+    );
+
+const base = import.meta.env.BASE_URL;
+
+const listDescription = SHOW_PRACTICE_DIARY
+  ? 'Activities と Tips の一覧です。'
+  : 'Tips・Gears・お知らせの一覧です。';
+const listSub = SHOW_PRACTICE_DIARY
+  ? 'Activities と Tips を分けて掲載しています。'
+  : 'Tips（コツ）、Gears（お気に入りのものなど）、お知らせを掲載しています。';
+---
+
+<BaseLayout title="記事一覧" description={listDescription}>
+  <header class="page-head">
+    <h1>記事一覧</h1>
+    <p class="page-head__sub">{listSub}</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <ul class="post-list">
+    {
+      visiblePosts.map((post) =>
+        post.data.category === 'Tips' ? (
+          <li>
+            <PostCard
+              href={`${base}blog/${post.slug}/`}
+              title={getPostListLabel(post.data)}
+              pubDate={post.data.pubDate}
+              tags={resolveBlogTags(post)}
+            />
+          </li>
+        ) : (
+          <li>
+            <article class="post-row">
+            <div class="post-row__main">
+              <h2 class="post-row__title">
+                <a href={`${base}blog/${post.slug}/`}>
+                  {getPostListLabel(post.data)}
+                </a>
+              </h2>
+              <p class="post-row__meta">
+                <span
+                  class={`pill pill--${getCategoryPillModifier(post.data.category)}`}
+                >
+                  {getCategoryDisplayLabel(post.data.category)}
+                </span>
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {formatDateYmd(post.data.pubDate)}
+                </time>
+              </p>
+            </div>
+            <div class="post-row__tags">
+              {resolveBlogTags(post).map((tag) => (
+                <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          </article>
+          </li>
+        ),
+      )
+    }
+  </ul>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .page-head__sub {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .post-list {
+    list-style: none;
+    margin: var(--space-md) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .post-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .post-list li:last-child .post-row {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .post-row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0.45rem 0 0;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .post-row__title {
+    margin: 0;
+    line-height: 1.45;
+    letter-spacing: 0.1em;
+  }
+
+  .post-row__title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .post-row__title a:hover {
+    color: var(--color-accent);
+  }
+
+  .post-row__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .tag {
+    font-size: 0.88rem;
+    color: color-mix(in oklab, var(--color-muted) 78%, white);
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in oklab, var(--color-muted) 32%, transparent);
+  }
+
+  .tag:hover {
+    color: color-mix(in oklab, var(--color-accent) 52%, white);
+    border-bottom-color: color-mix(in oklab, var(--color-accent) 32%, transparent);
+  }
+</style>

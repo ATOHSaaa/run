@@ -1,0 +1,349 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { getCollection } from 'astro:content';
+import { formatDateYmd } from '@/utils/date';
+import {
+  getGearDisplayName,
+  getPostDisplayTitle,
+  getPostListLabel,
+  gearListShowsArticleTitle,
+} from '@/utils/post-title';
+import { getCategoryDisplayLabel } from '@/utils/category-label';
+import {
+  BLOG_SLUG_TO_CATEGORY,
+  type BlogCategorySlug,
+} from '@/utils/blog-category-path';
+import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
+import { resolveGearCoverImageUrl } from '@/utils/resolve-gear-cover-image';
+import { prefetchAmazonProductImages } from '../../../../amazon-creators-products.mjs';
+import { resolveBlogTags } from '@/utils/blog-tags';
+
+export async function getStaticPaths() {
+  return (Object.keys(BLOG_SLUG_TO_CATEGORY) as BlogCategorySlug[]).map((slug) => ({
+    params: { category: slug },
+    props: { category: BLOG_SLUG_TO_CATEGORY[slug] },
+  }));
+}
+
+const { category } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const label = getCategoryDisplayLabel(category);
+const posts = sortBlogPostsByPubDateDesc(
+  (await getCollection('blog')).filter((p) => p.data.category === category),
+);
+
+const gearsPlaceholderFiles = [
+  'placeholder-1.svg',
+  'placeholder-2.svg',
+  'placeholder-3.svg',
+  'placeholder-4.svg',
+] as const;
+
+const gearsThumbBySlug: Record<string, string> = {};
+
+if (category === 'Gears' && posts.length > 0) {
+  await prefetchAmazonProductImages(posts);
+  const thumbUrls = await Promise.all(
+    posts.map((post, index) =>
+      resolveGearCoverImageUrl(
+        post,
+        base,
+        `${base}gears/${gearsPlaceholderFiles[index % gearsPlaceholderFiles.length]}`,
+      ),
+    ),
+  );
+  for (let i = 0; i < posts.length; i++) {
+    gearsThumbBySlug[posts[i].slug] = thumbUrls[i];
+  }
+}
+
+const pageTitle = `${label} の記事一覧`;
+const description = `「${label}」カテゴリの記事一覧です。`;
+---
+
+<BaseLayout title={pageTitle} description={description}>
+  <header class="page-head">
+    <p class="page-head__crumb">
+      <a href={`${base}blog/`}>記事一覧</a>
+      <span class="page-head__crumb-sep" aria-hidden="true">/</span>
+      <span>{label}</span>
+    </p>
+    <h1>{pageTitle}</h1>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  {
+    posts.length > 0 ? (
+      <ul class:list={['post-list', category === 'Tips' && 'post-list--tips-cards']}>
+        {posts.map((post) =>
+          category === 'Tips' ? (
+            <li>
+              <PostCard
+                href={`${base}blog/${post.slug}/`}
+                title={getPostListLabel(post.data)}
+                pubDate={post.data.pubDate}
+                tags={resolveBlogTags(post)}
+                dateWithTags
+              />
+            </li>
+          ) : category === 'Activities' ? (
+            <li>
+              <article class="post-row post-row--activities">
+                <h2 class="post-row__title post-row__title--with-date">
+                  <a href={`${base}blog/${post.slug}/`}>
+                    {getPostListLabel(post.data)}
+                  </a>
+                  <time class="post-row__inline-date" datetime={post.data.pubDate.toISOString()}>
+                    {formatDateYmd(post.data.pubDate)}
+                  </time>
+                </h2>
+                {
+                  resolveBlogTags(post).length > 0 && (
+                    <div class="post-row__tags">
+                      {resolveBlogTags(post).map((tag) => (
+                        <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+                          #{tag}
+                        </a>
+                      ))}
+                    </div>
+                  )
+                }
+              </article>
+            </li>
+          ) : category === 'Gears' ? (
+            <li>
+              <article class="post-row post-row--with-thumb">
+                <div class="post-row__main">
+                  <div class="post-row__title-row">
+                    <img
+                      class="post-row__thumb"
+                      src={gearsThumbBySlug[post.slug]}
+                      alt={getGearDisplayName(post.data)}
+                      width="88"
+                      height="88"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <h2 class="post-row__title">
+                      <a href={`${base}blog/${post.slug}/`}>
+                        {getPostListLabel(post.data)}
+                      </a>
+                    </h2>
+                  </div>
+                  {gearListShowsArticleTitle(post.data) && (
+                    <p class="post-row__subtitle">{getPostDisplayTitle(post.data)}</p>
+                  )}
+                </div>
+                <div class="post-row__footer">
+                  <div class="post-row__tags">
+                    {resolveBlogTags(post).map((tag) => (
+                      <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+                        #{tag}
+                      </a>
+                    ))}
+                  </div>
+                  <time class="post-row__date" datetime={post.data.pubDate.toISOString()}>
+                    {formatDateYmd(post.data.pubDate)}
+                  </time>
+                </div>
+              </article>
+            </li>
+          ) : (
+            <li>
+              <article class="post-row">
+                <div class="post-row__main">
+                  <h2 class="post-row__title">
+                    <a href={`${base}blog/${post.slug}/`}>
+                      {getPostListLabel(post.data)}
+                    </a>
+                  </h2>
+                  {gearListShowsArticleTitle(post.data) && (
+                    <p class="post-row__subtitle">{getPostDisplayTitle(post.data)}</p>
+                  )}
+                </div>
+                <div class="post-row__footer">
+                  <div class="post-row__tags">
+                    {resolveBlogTags(post).map((tag) => (
+                      <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+                        #{tag}
+                      </a>
+                    ))}
+                  </div>
+                  <time class="post-row__date" datetime={post.data.pubDate.toISOString()}>
+                    {formatDateYmd(post.data.pubDate)}
+                  </time>
+                </div>
+              </article>
+            </li>
+          ),
+        )}
+      </ul>
+    ) : (
+      <p class="page-empty">このカテゴリの記事はまだありません。</p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head__crumb {
+    margin: 0 0 var(--space-xs);
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .page-head__crumb a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .page-head__crumb a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .page-head__crumb-sep {
+    margin-inline: 0.35rem;
+    opacity: 0.65;
+  }
+
+  .page-head h1 {
+    margin: 0;
+    font-size: clamp(1.35rem, 4vw, 1.85rem);
+    line-height: 1.25;
+  }
+
+  .page-empty {
+    margin: var(--space-lg) 0 0;
+    color: var(--color-muted);
+  }
+
+  .post-list {
+    list-style: none;
+    margin: var(--space-md) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .post-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .post-row__title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .post-row--with-thumb .post-row__title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-row__thumb {
+    flex-shrink: 0;
+    width: clamp(3.5rem, 12vw, 4.5rem);
+    height: clamp(3.5rem, 12vw, 4.5rem);
+    object-fit: cover;
+    border-radius: 0.65rem;
+    border: 3px solid var(--color-text);
+    box-sizing: border-box;
+  }
+
+  .post-list li:last-child .post-row {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .post-row__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .post-row__date {
+    flex-shrink: 0;
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .post-row__title {
+    margin: 0;
+    line-height: 1.45;
+    letter-spacing: 0.1em;
+  }
+
+  .post-row__title--with-date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem var(--space-sm);
+  }
+
+  .post-row__inline-date {
+    flex-shrink: 0;
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  .post-row--activities {
+    gap: var(--space-sm);
+  }
+
+  .post-row__title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .post-row__title a:hover {
+    color: var(--color-accent);
+  }
+
+  .post-row__subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+
+  .post-row__tags {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .tag {
+    font-size: 0.88rem;
+    color: color-mix(in oklab, var(--color-muted) 78%, white);
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in oklab, var(--color-muted) 32%, transparent);
+  }
+
+  .tag:hover {
+    color: color-mix(in oklab, var(--color-accent) 52%, white);
+    border-bottom-color: color-mix(in oklab, var(--color-accent) 32%, transparent);
+  }
+</style>

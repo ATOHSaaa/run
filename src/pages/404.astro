@@ -1,0 +1,56 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="ページが見つかりません"
+  description="指定されたページは存在しません。"
+>
+  <header class="page-head">
+    <h1>ページが見つかりません</h1>
+    <p class="page-head__sub">URL をご確認ください。</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="prose static-prose">
+    <p>お探しのページは移動したか、削除された可能性があります。URL をご確認のうえ、もう一度お試しください。</p>
+  </div>
+
+  <p class="back">
+    <a href={base}>トップへ戻る</a>
+  </p>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .page-head__sub {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .back {
+    margin-top: var(--space-xl);
+    font-size: 0.95rem;
+  }
+
+  .back a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .back a:hover {
+    border-bottom-color: var(--color-accent);
+  }
+</style>

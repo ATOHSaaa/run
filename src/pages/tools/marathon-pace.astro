@@ -1,0 +1,635 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import {
+  MARATHON_PACE_CHART_ROWS,
+  MARATHON_PACE_DISTANCES,
+} from '@/data/marathon-pace-chart';
+import {
+  getPaceChartFullTimeDividerLabelAfter,
+  getPaceChartSubAnchorId,
+  PACE_CHART_FULL_TIME_DIVIDERS,
+} from '@/utils/marathon-pace-calculator';
+
+const base = import.meta.env.BASE_URL;
+const goalToolHref = `${base}tools/marathon-goal/`;
+---
+
+<BaseLayout
+  title="マラソン ペース表"
+  description="1km あたりのペースから、5km・10km・20km・フルマラソンの想定タイムを一覧で確認できます。"
+>
+  <header class="page-head">
+    <h1>マラソン ペース表</h1>
+    <p class="page-head__sub">1km ペース別の想定タイム</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="pace-page">
+    <p class="pace-page__lead">
+      1km あたりのペースを5秒刻みで、一定ペース換算の各距離の目安タイムを載せています（2:50/km〜8:00/km）。フルマラソンは
+      {MARATHON_PACE_DISTANCES.fullKm} km、20km は {MARATHON_PACE_DISTANCES.twentyKm} km で換算しています。
+      フルマラソンの目標から各距離を出す場合は<a href={goalToolHref}>換算ツール</a>をどうぞ。
+    </p>
+
+    <div class="pace-chart__block">
+      <div class="pace-chart__sticky-top">
+        <nav class="pace-chart__jump" aria-label="サブ目標へのジャンプ">
+      <ol class="pace-chart__jump-list">
+        {
+          PACE_CHART_FULL_TIME_DIVIDERS.map(({ label }) => (
+            <li>
+              <a class="pace-chart__jump-link" href={`#${getPaceChartSubAnchorId(label)}`}>
+                {label}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+        </nav>
+
+        <table class="pace-chart pace-chart--head" aria-hidden="true">
+          <colgroup>
+            <col class="pace-chart__col-goal" />
+            <col class="pace-chart__col-pace" />
+            <col class="pace-chart__col-dist" span="4" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="pace-chart__goal-th" scope="col">
+                <span class="sr-only">目標</span>
+              </th>
+              <th scope="col">1km</th>
+              <th scope="col">5km</th>
+              <th scope="col">10km</th>
+              <th scope="col">20km</th>
+              <th scope="col">
+                <span class="pace-chart__th-full">フルマラソン</span>
+                <span class="pace-chart__th-full--short" aria-hidden="true">フル</span>
+              </th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      <div class="pace-chart__frame">
+        <p class="pace-chart__caption" id="pace-chart-caption">1km ペースと距離別の想定タイム一覧</p>
+        <table class="pace-chart pace-chart--body" aria-describedby="pace-chart-caption">
+          <colgroup>
+            <col class="pace-chart__col-goal" />
+            <col class="pace-chart__col-pace" />
+            <col class="pace-chart__col-dist" span="4" />
+          </colgroup>
+          <thead class="pace-chart__thead-sr">
+            <tr>
+              <th class="pace-chart__goal-th" scope="col">
+                <span class="sr-only">目標</span>
+              </th>
+              <th scope="col">1km</th>
+              <th scope="col">5km</th>
+              <th scope="col">10km</th>
+              <th scope="col">20km</th>
+              <th scope="col">
+                <span class="pace-chart__th-full">フルマラソン</span>
+                <span class="pace-chart__th-full--short" aria-hidden="true">フル</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+          {
+            MARATHON_PACE_CHART_ROWS.map((row, index, rows) => {
+              const dividerLabel = getPaceChartFullTimeDividerLabelAfter(
+                row.fullMarathon,
+                rows[index + 1]?.fullMarathon,
+              );
+              return (
+                <tr
+                  id={dividerLabel ? getPaceChartSubAnchorId(dividerLabel) : undefined}
+                  class:list={[dividerLabel && 'pace-chart__row--divider']}
+                >
+                  <td class="pace-chart__goal-cell">
+                    {dividerLabel && (
+                      <a class="pace-chart__side-label" href={`#${getPaceChartSubAnchorId(dividerLabel)}`}>
+                        {dividerLabel}
+                      </a>
+                    )}
+                  </td>
+                  <th scope="row">{row.pacePerKm}</th>
+                  <td>{row.fiveKm}</td>
+                  <td>{row.tenKm}</td>
+                  <td>{row.twentyKm}</td>
+                  <td>{row.fullMarathon}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+    </div>
+
+    <p class="pace-page__note">
+      実際のレースではコース高低差や給水・渋滞などでタイムは前後します。練習や目標設定の参考としてご利用ください。
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  const PACE_JUMP_LINK_SELECTOR = '.pace-chart__jump-link';
+  const PACE_DIVIDER_ROW_SELECTOR = 'tr[id^="pace-sub"]';
+  const PACE_SUB_ANCHOR_SELECTOR = 'a[href^="#pace-sub"]';
+
+  let suppressScrollSync = false;
+  let scrollSyncScheduled = false;
+
+  function setPaceChartJumpCurrent(hash: string) {
+    document.querySelectorAll(PACE_JUMP_LINK_SELECTOR).forEach((node) => {
+      if (!(node instanceof HTMLAnchorElement)) return;
+      const isCurrent = hash !== '' && node.hash === hash;
+      node.classList.toggle('is-current', isCurrent);
+      node.toggleAttribute('aria-current', isCurrent);
+    });
+  }
+
+  function paceChartUrlForHash(hash: string) {
+    return `${window.location.pathname}${window.location.search}${hash}`;
+  }
+
+  function syncHashToUrl(hash: string, mode: 'replace' | 'push') {
+    setPaceChartJumpCurrent(hash);
+    const url = paceChartUrlForHash(hash);
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (current === url) return;
+    if (mode === 'push') {
+      history.pushState(null, '', url);
+    } else {
+      history.replaceState(null, '', url);
+    }
+  }
+
+  /** Sticky 有効時に区切り行の上端を合わせるビューポート Y（ジャンプ nav + 列見出しの下端） */
+  function getPaceChartStickyAlignViewportY() {
+    const stickyEl = document.querySelector('.pace-chart__sticky-top');
+    if (!(stickyEl instanceof HTMLElement)) return 120;
+    const stuckTop = parseFloat(getComputedStyle(stickyEl).top) || 0;
+    return stuckTop + stickyEl.getBoundingClientRect().height;
+  }
+
+  function getPaceChartStickyProbeLine() {
+    const stickyEl = document.querySelector('.pace-chart__sticky-top');
+    if (!(stickyEl instanceof HTMLElement)) return 120;
+    const stuckTop = parseFloat(getComputedStyle(stickyEl).top) || 0;
+    const rect = stickyEl.getBoundingClientRect();
+    if (rect.top <= stuckTop + 1) {
+      return rect.bottom;
+    }
+    return getPaceChartStickyAlignViewportY();
+  }
+
+  function getCurrentDividerIdFromScroll() {
+    const dividers = [...document.querySelectorAll(PACE_DIVIDER_ROW_SELECTOR)];
+    if (dividers.length === 0) return null;
+
+    const probeDocY = getPaceChartStickyProbeLine() + window.scrollY;
+
+    for (let i = dividers.length - 1; i >= 0; i--) {
+      const rowTop = dividers[i].getBoundingClientRect().top + window.scrollY;
+      if (probeDocY >= rowTop - 1) {
+        return dividers[i].id;
+      }
+    }
+
+    return dividers[0].id;
+  }
+
+  function syncPaceChartJumpFromScroll() {
+    if (suppressScrollSync) return;
+
+    const currentId = getCurrentDividerIdFromScroll();
+    if (!currentId) return;
+
+    syncHashToUrl(`#${currentId}`, 'replace');
+  }
+
+  function schedulePaceChartJumpScrollSync() {
+    if (scrollSyncScheduled) return;
+    scrollSyncScheduled = true;
+    requestAnimationFrame(() => {
+      syncPaceChartJumpFromScroll();
+      scrollSyncScheduled = false;
+    });
+  }
+
+  function releaseScrollSyncAfterNavigate(expectedHash: string) {
+    const done = () => {
+      suppressScrollSync = false;
+      syncHashToUrl(expectedHash, 'replace');
+    };
+
+    if ('onscrollend' in window) {
+      window.addEventListener('scrollend', done, { once: true });
+    } else {
+      setTimeout(done, 600);
+    }
+  }
+
+  function navigateToDivider(hash: string, push: boolean) {
+    const id = hash.replace(/^#/, '');
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    suppressScrollSync = true;
+    syncHashToUrl(hash, push ? 'push' : 'replace');
+
+    const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - getPaceChartStickyAlignViewportY());
+    window.scrollTo({ top, behavior: 'smooth' });
+
+    releaseScrollSyncAfterNavigate(hash);
+  }
+
+  function initPaceChartJumpFromLocation() {
+    const hash = window.location.hash;
+    if (!hash) {
+      syncPaceChartJumpFromScroll();
+      return;
+    }
+
+    const target = document.getElementById(hash.replace(/^#/, ''));
+    if (!target) {
+      syncPaceChartJumpFromScroll();
+      return;
+    }
+
+    suppressScrollSync = true;
+    syncHashToUrl(hash, 'replace');
+    const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - getPaceChartStickyAlignViewportY());
+    window.scrollTo({ top, behavior: 'auto' });
+    requestAnimationFrame(() => {
+      suppressScrollSync = false;
+    });
+  }
+
+  initPaceChartJumpFromLocation();
+
+  window.addEventListener('scroll', schedulePaceChartJumpScrollSync, { passive: true });
+  window.addEventListener('resize', schedulePaceChartJumpScrollSync);
+  document.documentElement.addEventListener('site-header-sticky-height', schedulePaceChartJumpScrollSync);
+
+  window.addEventListener('popstate', () => {
+    const hash = window.location.hash;
+    if (!hash) {
+      syncPaceChartJumpFromScroll();
+      return;
+    }
+    navigateToDivider(hash, false);
+  });
+
+  document.querySelectorAll(PACE_SUB_ANCHOR_SELECTOR).forEach((node) => {
+    if (!(node instanceof HTMLAnchorElement)) return;
+    node.addEventListener('click', (event) => {
+      event.preventDefault();
+      navigateToDivider(node.hash, true);
+    });
+  });
+</script>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0;
+  }
+
+  .page-head__sub {
+    margin: var(--space-xs) 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .pace-page {
+    max-width: 100%;
+  }
+
+  .pace-chart__block {
+    --pace-chart-goal-gutter: 3.1rem;
+    --pace-sticky-top: calc(env(safe-area-inset-top, 0px) + var(--site-header-sticky-height));
+    margin: 0 0 var(--space-md);
+  }
+
+  @media (max-width: 47.99rem) {
+    .pace-chart__block {
+      margin-inline: calc(-1 * var(--space-xs));
+    }
+  }
+
+  .pace-page__lead :global(a),
+  .pace-page__lead :global(a:visited) {
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--color-muted) 70%, var(--color-border));
+    text-underline-offset: 0.16em;
+  }
+
+  .pace-page__lead,
+  .pace-page__note {
+    margin: 0 0 var(--space-md);
+    color: var(--color-text);
+    line-height: var(--line-height-body);
+    text-align: justify;
+    text-justify: inter-character;
+  }
+
+  .pace-page__note {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .pace-chart__sticky-top {
+    position: sticky;
+    top: var(--pace-sticky-top);
+    z-index: 30;
+    padding-left: var(--pace-chart-goal-gutter);
+    background: var(--color-bg);
+  }
+
+  .pace-chart__jump {
+    margin: 0;
+    padding: var(--space-xs) 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .pace-chart__jump-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.12rem, 0.9vw, 0.5rem);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pace-chart__jump-link {
+    display: inline-block;
+    flex: 0 0 auto;
+    padding: 0.18rem clamp(0.22rem, 1.1vw, 0.55rem);
+    font-size: clamp(0.5625rem, 2.35vw, 0.8125rem);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--color-text);
+    text-decoration: none;
+    border: 1px solid var(--color-text);
+    border-radius: 0.25rem;
+    background: var(--color-bg);
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+
+  .pace-chart__jump-link:hover,
+  .pace-chart__jump-link:active,
+  .pace-chart__jump-link:focus-visible,
+  .pace-chart__jump-link.is-current {
+    color: #fff;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .pace-chart__frame {
+    position: relative;
+    padding-left: var(--pace-chart-goal-gutter);
+    overflow: visible;
+  }
+
+  .pace-chart__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pace-chart {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    background: var(--color-bg);
+  }
+
+  .pace-chart--head {
+    font-size: clamp(0.5625rem, 2.5vw, 0.8125rem);
+    line-height: 1.2;
+    border: 2px solid var(--color-text);
+    border-bottom: none;
+    border-radius: 0;
+  }
+
+  .pace-chart--body {
+    font-size: clamp(0.5625rem, 2.65vw, 0.875rem);
+    line-height: 1.25;
+    border: 2px solid var(--color-text);
+    border-top: none;
+    border-radius: 0 0 0.4rem 0.4rem;
+  }
+
+  .pace-chart__thead-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pace-chart__col-goal {
+    width: 0;
+  }
+
+  .pace-chart__col-pace {
+    width: 19%;
+  }
+
+  .pace-chart__col-dist {
+    width: 20.25%;
+  }
+
+  .pace-chart__goal-th,
+  .pace-chart__goal-cell {
+    width: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .pace-chart__goal-th {
+    visibility: hidden;
+  }
+
+  .pace-chart__goal-cell {
+    position: relative;
+    vertical-align: middle;
+  }
+
+  .pace-chart--body tbody tr.pace-chart__row--divider .pace-chart__goal-cell {
+    vertical-align: bottom;
+  }
+
+  .pace-chart__side-label {
+    position: absolute;
+    right: 0.35rem;
+    bottom: 0;
+    transform: translateY(50%);
+    font-size: clamp(0.5rem, 2.2vw, 0.75rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .pace-chart__side-label:hover,
+  .pace-chart__side-label:focus-visible {
+    color: var(--color-accent);
+    outline: none;
+  }
+
+  .pace-chart--body tbody tr.pace-chart__row--divider {
+    scroll-margin-top: calc(var(--pace-sticky-top) + 3rem);
+  }
+
+  .pace-chart--head thead th,
+  .pace-chart--body thead th {
+    padding: 0.4rem 0.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-align: center;
+    color: #fff;
+    background: var(--color-accent);
+    white-space: normal;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .pace-chart--head thead th {
+    border-bottom: 2px solid var(--color-text);
+  }
+
+  .pace-chart--head thead th {
+    font-size: inherit;
+  }
+
+  .pace-chart__th-full--short {
+    display: inline;
+  }
+
+  .pace-chart__th-full {
+    display: none;
+  }
+
+  .pace-chart--body tbody th,
+  .pace-chart--body tbody td {
+    padding: 0.35rem 0.1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .pace-chart--body tbody th {
+    font-weight: 700;
+    background: color-mix(in oklab, var(--color-accent-soft) 55%, white);
+    border-right: 1px solid var(--color-border);
+  }
+
+  .pace-chart--body tbody tr:nth-child(even) td {
+    background: color-mix(in oklab, var(--color-border) 22%, white);
+  }
+
+  .pace-chart--body tbody tr:nth-child(even) th {
+    background: color-mix(in oklab, var(--color-accent-soft) 72%, white);
+  }
+
+  .pace-chart--body tbody tr.pace-chart__row--divider > th,
+  .pace-chart--body tbody tr.pace-chart__row--divider > td {
+    border-bottom: 3px solid var(--color-text);
+  }
+
+  .pace-chart--body tbody tr:last-child > th,
+  .pace-chart--body tbody tr:last-child > td {
+    border-bottom: none;
+  }
+
+  .pace-chart--body tbody tr.pace-chart__row--divider:last-child > th,
+  .pace-chart--body tbody tr.pace-chart__row--divider:last-child > td {
+    border-bottom: 3px solid var(--color-text);
+  }
+
+  @media (min-width: 48rem) {
+    .pace-chart--head {
+      font-size: 0.8125rem;
+    }
+
+    .pace-chart--body {
+      font-size: 0.9375rem;
+      line-height: 1.35;
+    }
+
+    .pace-chart__block {
+      --pace-chart-goal-gutter: 3.5rem;
+    }
+
+    .pace-chart__jump-link {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8125rem;
+      letter-spacing: 0.04em;
+      border-width: 2px;
+      border-radius: 0.35rem;
+    }
+
+    .pace-chart__side-label {
+      font-size: 0.6875rem;
+    }
+
+    .pace-chart__th-full {
+      display: inline;
+    }
+
+    .pace-chart__th-full--short {
+      display: none;
+    }
+
+    .pace-chart--head thead th,
+    .pace-chart--body thead th {
+      padding: 0.65rem 0.5rem;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .pace-chart--body tbody th,
+    .pace-chart--body tbody td {
+      padding: 0.55rem 0.65rem;
+      white-space: nowrap;
+    }
+  }
+</style>

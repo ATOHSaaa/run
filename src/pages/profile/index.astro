@@ -1,0 +1,134 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { siteProfile, profileDateForDisplay } from '@/config/profile';
+import { formatDateYmd } from '@/utils/date';
+import {
+  PROFILE_AGE_TIME_ZONE,
+  ageCompletedYears,
+  calendarYmdPartsInTz,
+} from '@/utils/profile-age';
+
+const base = import.meta.env.BASE_URL;
+const ageTodayTokyo = calendarYmdPartsInTz(new Date(), PROFILE_AGE_TIME_ZONE);
+const profileAgeYears = siteProfile.birthDate
+  ? ageCompletedYears(siteProfile.birthDate, ageTodayTokyo)
+  : null;
+---
+
+<BaseLayout title="管理人プロフィール" description="ブログ管理人のプロフィールです。">
+  <header class="page-head">
+    <h1>管理人プロフィール</h1>
+    <p class="page-head__sub">このブログを書いている人について</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="prose static-prose">
+    <p>
+      ブログ名のとおり、体重が100kgあった頃からランニングを始め、減量と走りを続けながら記録を残しています。トップページのプロフィール欄と同じ内容を、ページとしてまとめています。
+    </p>
+
+    <h2>基本情報</h2>
+    <ul>
+      <li><strong>名前（ハンドル）</strong>：{siteProfile.displayName}</li>
+      {
+        siteProfile.birthDate && profileAgeYears != null && (
+          <li>
+            <strong>年齢</strong>：{profileAgeYears} 歳（{formatDateYmd(profileDateForDisplay(siteProfile.birthDate))} 生）
+          </li>
+        )
+      }
+      {siteProfile.heightCm != null && <li><strong>身長</strong>：{siteProfile.heightCm} cm</li>}
+      {
+        siteProfile.weight && (
+          <li>
+            <strong>体重</strong>：{siteProfile.weight.kg} kg（{formatDateYmd(profileDateForDisplay(siteProfile.weight.asOf))} 時点）
+          </li>
+        )
+      }
+    </ul>
+
+  {
+    siteProfile.distanceTimes.length > 0 && (
+      <>
+        <h2>記録タイム</h2>
+        <ul>
+          {siteProfile.distanceTimes.map((row) => (
+            <li>
+              <strong>{row.distanceLabel}</strong>：{row.time}
+              {
+                row.eventNote && (
+                  <>
+                    <br />
+                    <span class="home-profile__stat-note">（{row.eventNote}）</span>
+                  </>
+                )
+              }
+              （{formatDateYmd(profileDateForDisplay(row.recordedOn))}）
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+    <h2>リンク</h2>
+    <ul>
+      {
+        siteProfile.sns.map((item) => (
+          <li>
+            {item.platform === 'twitter' && (
+              <a href={item.url} rel="noopener noreferrer" target="_blank">
+                X（@atohsaaa）
+              </a>
+            )}
+            {item.platform === 'website' && (
+              <a href={item.url} rel="noopener noreferrer" target="_blank">
+                ホームページ（atohs.me）
+              </a>
+            )}
+          </li>
+        ))
+      }
+      <li>
+        <a href={`${base}#heading-profile`}>トップページのプロフィール欄へ</a>
+      </li>
+    </ul>
+  </div>
+
+  <p class="back">
+    <a href={`${base}about/`}>← このブログについて</a>
+  </p>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .page-head__sub {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .back {
+    margin-top: var(--space-xl);
+    font-size: 0.95rem;
+  }
+
+  .back a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .back a:hover {
+    border-bottom-color: var(--color-accent);
+  }
+
+</style>

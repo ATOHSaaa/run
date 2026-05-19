@@ -1,0 +1,19 @@
+---
+description: 本プロジェクトの構成ドキュメントを必ず参照する
+alwaysApply: true
+---
+
+# プロジェクト構成の参照
+
+このリポジトリ（sub3-blog）で作業・質問・実装を行うときは、**最初に**次を読む:
+
+1. **`docs/COMPONENT_ARCHITECTURE.md`** — コンポーネント・ページ・データ・Markdown パイプライン
+2. **`docs/design.md`** — カラー・タイポ・レイアウト・UI パターン・デザイン原則
+
+- 新しい UI・記事種別・ルートを足す前に、既存の置き場所とデザイン慣習に合わせる。
+- **Activities 記事を新規作成・更新するとき**は、`COMPONENT_ARCHITECTURE.md` の **「同じ日（`pubDate`）に Activities を複数書く場合」** を必ず守る。同日の `.md` が既にあるときは **上書きせず別ファイルを新規作成** する。
+- **note から記事をインポートするとき**は、`COMPONENT_ARCHITECTURE.md` の **「note から記事をインポートする場合」** を守る。冒頭の**サムネイル画像は本文に含めない**。
+- MD と実装がずれたら、作業完了時に該当 MD を更新する。
+- 記事 Markdown の**外部リンク**（`http://` / `https://`）は `rehype-external-links-blank` で `target="_blank"`。手書きの HTML に `target` を付けない（プラグイン任せ）。
+
+推測で構成や見た目を決めず、MD に無い場合はコードを確認してから MD へ追記を検討する。

@@ -1,0 +1,286 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { getPostDisplayTitle, getPostListLabel } from '@/utils/post-title';
+import { getCategoryDisplayLabel } from '@/utils/category-label';
+import { SHOW_PRACTICE_DIARY } from '@/config/features';
+import { resolveBlogTags } from '@/utils/blog-tags';
+
+const base = import.meta.env.BASE_URL;
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const visible = SHOW_PRACTICE_DIARY
+  ? posts
+  : posts.filter(
+      (p) =>
+        p.data.category === 'Tips' ||
+        p.data.category === 'Gears' ||
+        p.data.category === 'News',
+    );
+
+const searchIndex = visible.map((p) => {
+  const title = getPostDisplayTitle(p.data);
+  const listLabel = getPostListLabel(p.data);
+  const tags = resolveBlogTags(p).join(' ');
+  const category = getCategoryDisplayLabel(p.data.category);
+  const haystack = [listLabel, title, p.data.gearName, p.data.description, tags, category]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return {
+    slug: p.slug,
+    title: listLabel,
+    description: p.data.description,
+    category,
+    haystack,
+  };
+});
+---
+
+<BaseLayout title="記事を検索" description="ブログ記事のタイトル・説明・タグから検索します。">
+  <header class="search-head">
+    <h1>記事を検索</h1>
+  </header>
+
+  <form class="search-form" method="get" action={`${base}search/`} role="search">
+    <label class="sr-only" for="search-page-q">キーワード</label>
+    <div class="search-form__field">
+      <span class="search-form__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></circle>
+          <path
+            d="M15.25 15.25 21 21"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </span>
+      <input
+        id="search-page-q"
+        class="search-form__input"
+        type="search"
+        name="q"
+        placeholder="Search"
+        maxlength="200"
+        autocomplete="off"
+      />
+    </div>
+    <button class="search-form__submit" type="submit">GO!</button>
+  </form>
+
+  <p id="search-status" class="search-status" role="status" aria-live="polite"></p>
+  <ul id="search-results" class="search-results"></ul>
+</BaseLayout>
+
+<script is:inline define:vars={{ searchIndex, base }}>
+  (function () {
+    const input = document.getElementById('search-page-q');
+    const status = document.getElementById('search-status');
+    const list = document.getElementById('search-results');
+    if (!input || !status || !list) return;
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const qRaw = params.get('q') ?? '';
+    const q = qRaw.trim().toLowerCase();
+    input.value = qRaw.trim();
+
+    if (!q) {
+      status.textContent = 'キーワードを入力して検索してください。';
+      return;
+    }
+
+    const terms = q.split(/\s+/).filter(Boolean);
+    const matches = searchIndex.filter((entry) =>
+      terms.every((t) => entry.haystack.includes(t)),
+    );
+
+    if (matches.length === 0) {
+      status.textContent = `「${qRaw.trim()}」に一致する記事はありませんでした。`;
+      return;
+    }
+
+    status.textContent = `「${qRaw.trim()}」で ${matches.length} 件見つかりました。`;
+    list.innerHTML = matches
+      .map(
+        (entry) =>
+          `<li class="search-results__item"><a class="search-results__link" href="${base}blog/${entry.slug}/"><span class="search-results__title">${escapeHtml(entry.title)}</span><span class="search-results__meta">${escapeHtml(entry.category)}</span></a><p class="search-results__desc">${escapeHtml(entry.description)}</p></li>`,
+      )
+      .join('');
+  })();
+</script>
+
+<style>
+  .search-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .search-head h1 {
+    margin: 0;
+    font-size: var(--heading-h2-size);
+    line-height: 1.25;
+  }
+
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    align-items: stretch;
+    margin-bottom: var(--space-lg);
+  }
+
+  .search-form__field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 12rem;
+    min-width: 0;
+    max-width: 28rem;
+  }
+
+  .search-form__icon {
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.95rem;
+    height: 0.95rem;
+    z-index: 2;
+    pointer-events: none;
+    color: #0d0d0d;
+  }
+
+  .search-form__icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .search-form__input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.5rem 0.75rem 0.5rem calc(0.55rem + 0.95rem + 0.6rem);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-bg);
+    color: #0d0d0d;
+  }
+
+  .search-form__input::placeholder {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #0a0a0a;
+  }
+
+  .search-form__input::-webkit-search-decoration,
+  .search-form__input::-webkit-search-cancel-button,
+  .search-form__input::-webkit-search-results-button,
+  .search-form__input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  .search-form__input:focus,
+  .search-form__input:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+  }
+
+  .search-form__submit:focus,
+  .search-form__submit:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .search-form__submit {
+    padding: 0.5rem 1.1rem;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 14px;
+    background: var(--color-accent);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .search-form__submit:hover {
+    filter: brightness(1.06);
+  }
+
+  .search-status {
+    margin: 0 0 var(--space-md);
+    font-size: 0.95rem;
+    color: var(--color-muted);
+  }
+
+  .search-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .search-results__item {
+    margin: 0;
+    padding: 0 0 var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .search-results__item:last-child {
+    border-bottom: none;
+  }
+
+  .search-results__link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .search-results__link:hover .search-results__title {
+    color: var(--color-accent);
+  }
+
+  .search-results__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .search-results__meta {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+
+  .search-results__desc {
+    margin: 0.35rem 0 0;
+    font-size: 0.92rem;
+    color: var(--color-muted);
+    line-height: 1.55;
+  }
+</style>

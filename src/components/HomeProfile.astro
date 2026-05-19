@@ -1,0 +1,609 @@
+---
+import {
+  siteProfile,
+  profileDateForDisplay,
+  type ProfileSnsPlatform,
+} from '@/config/profile';
+import { formatDateYmd } from '@/utils/date';
+import {
+  PROFILE_AGE_TIME_ZONE,
+  ageCompletedYears,
+  calendarYmdPartsInTz,
+} from '@/utils/profile-age';
+function snsAriaLabel(platform: ProfileSnsPlatform): string {
+  switch (platform) {
+    case 'twitter':
+      return 'X（別タブで開く）';
+    case 'website':
+      return 'ホームページ（別タブで開く）';
+  }
+}
+
+const bioParagraphs = siteProfile.bio
+  .split(/\n{2,}/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+
+const distanceTimesOrdered = siteProfile.distanceTimes;
+
+const metricsVisible =
+  Boolean(siteProfile.birthDate) ||
+  siteProfile.heightCm != null ||
+  Boolean(siteProfile.weight) ||
+  distanceTimesOrdered.length > 0;
+
+const ageTodayTokyo = calendarYmdPartsInTz(new Date(), PROFILE_AGE_TIME_ZONE);
+const profileAgeYears = siteProfile.birthDate
+  ? ageCompletedYears(siteProfile.birthDate, ageTodayTokyo)
+  : null;
+
+function profileDistanceTimeHeading(distanceLabel: string): string {
+  return `${distanceLabel}タイム`;
+}
+---
+
+<section
+  class="home-block home-block--profile"
+  aria-labelledby="heading-profile"
+  aria-describedby="profile-subtitle"
+>
+  <div class="home-block__head home-block__head--scroll-reveal">
+    <h2 id="heading-profile" class="home-block__title">Hi!</h2>
+    <p id="profile-subtitle" class="home-block__tagline">自己紹介をします！</p>
+  </div>
+
+  <div class="home-profile">
+    <div class="home-profile__identity">
+      <p class="home-profile__name">
+        <span class="home-profile__name-label">
+          <span class="home-profile__name-label-line">このブログを</span>
+          <span class="home-profile__name-label-line">書いている人</span>
+        </span>
+        <span class="home-profile__name-main">{siteProfile.displayName}</span>
+      </p>
+      {
+        siteProfile.sns.length > 0 && (
+          <ul class="home-profile__sns" aria-label="リンク">
+            {siteProfile.sns.map((item) => (
+              <li class="home-profile__sns-item">
+                <a
+                  href={item.url}
+                  class="home-profile__sns-link"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  aria-label={snsAriaLabel(item.platform)}
+                >
+                  {item.platform === 'twitter' && (
+                    <svg
+                      class="home-profile__sns-svg"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  )}
+                  {item.platform === 'website' && (
+                    <svg
+                      class="home-profile__sns-svg"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5Z" />
+                    </svg>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    {
+      bioParagraphs.length > 0 && (
+        <div class="home-profile__bio">
+          {bioParagraphs.map((p) => (
+            <p>{p}</p>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      metricsVisible && (
+      <div class="home-profile__metrics">
+              {
+                siteProfile.birthDate && profileAgeYears != null && (
+                  <div class="home-profile__block">
+                    <h3 class="home-profile__heading">年齢</h3>
+                    <ul class="home-profile__stats">
+                      <li class="home-profile__stat-row">
+                        <span class="home-profile__stat-main">
+                          <span
+                            id="profile-age-value"
+                            class="profile-age-num"
+                            data-birth-date={siteProfile.birthDate}
+                          >
+                            {profileAgeYears}
+                          </span>
+                          <span class="home-profile__unit">歳</span>
+                        </span>
+                        <time
+                          class="home-profile__stat-date"
+                          datetime={siteProfile.birthDate}
+                        >
+                          Born in {formatDateYmd(profileDateForDisplay(siteProfile.birthDate))}
+                        </time>
+                      </li>
+                    </ul>
+                  </div>
+                )
+              }
+              {
+                siteProfile.heightCm != null && (
+                  <div class="home-profile__block">
+                    <h3 class="home-profile__heading">身長</h3>
+                    <ul class="home-profile__stats">
+                      <li class="home-profile__stat-row">
+                        <span class="home-profile__stat-main">
+                          {siteProfile.heightCm}
+                          <span class="home-profile__unit">cm</span>
+                        </span>
+                        <span class="home-profile__stat-date home-profile__stat-date--phrase">
+                          When did I measure it…?
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                )
+              }
+              {
+                siteProfile.weight && (
+                  <div class="home-profile__block">
+                    <h3 class="home-profile__heading">体重</h3>
+                    <ul class="home-profile__stats home-profile__stats--weight">
+                      <li class="home-profile__stat-row">
+                        <span class="home-profile__stat-main">
+                          {siteProfile.weight.kg.toFixed(1)}
+                          <span class="home-profile__unit">kg</span>
+                        </span>
+                        <time
+                          class="home-profile__stat-date"
+                          datetime={siteProfile.weight.asOf}
+                        >
+                          {formatDateYmd(profileDateForDisplay(siteProfile.weight.asOf))}
+                        </time>
+                      </li>
+                    </ul>
+                  </div>
+                )
+              }
+              {
+                distanceTimesOrdered.map((row) => {
+                  const d = profileDateForDisplay(row.recordedOn);
+                  return (
+                    <div class="home-profile__block">
+                      <h3 class="home-profile__heading">
+                        {profileDistanceTimeHeading(row.distanceLabel)}
+                      </h3>
+                      <ul class="home-profile__stats">
+                        <li class="home-profile__stat-row">
+                          <span
+                            class:list={[
+                              'home-profile__stat-main',
+                              row.eventNote && 'home-profile__stat-main--with-note',
+                            ]}
+                          >
+                            <span class="home-profile__stat-time">{row.time}</span>
+                            {
+                              row.eventNote && (
+                                <span class="home-profile__stat-note">（{row.eventNote}）</span>
+                              )
+                            }
+                          </span>
+                          <time class="home-profile__stat-date" datetime={row.recordedOn}>
+                            {formatDateYmd(d)}
+                          </time>
+                        </li>
+                      </ul>
+                    </div>
+                  );
+                })
+              }
+      </div>
+      )
+    }
+    {siteProfile.birthDate && (
+      <script>
+        import {
+          PROFILE_AGE_TIME_ZONE,
+          ageCompletedYears,
+          calendarYmdPartsInTz,
+        } from '@/utils/profile-age';
+
+        function syncProfileAge(): void {
+          const el = document.getElementById('profile-age-value');
+          const birth = el?.dataset.birthDate?.trim();
+          if (!el || !birth) return;
+
+          const today = calendarYmdPartsInTz(new Date(), PROFILE_AGE_TIME_ZONE);
+          const age = ageCompletedYears(birth, today);
+          if (age !== null && Number.isFinite(age)) {
+            el.textContent = String(age);
+          }
+        }
+
+        syncProfileAge();
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') syncProfileAge();
+        });
+      </script>
+    )}
+  </div>
+</section>
+
+<style>
+  .home-block.home-block--profile {
+    --_vp: 100vw;
+    --_vp: 100dvw;
+    --_side-gutter: max(0px, calc((var(--_vp) - var(--site-max-width)) / 2));
+    background: var(--color-accent);
+    color: #fff;
+    box-sizing: border-box;
+    /* 上: 隣接ブロックと相殺。下: site-main の下パディング分だけ青を伸ばす */
+    margin-top: calc(-1 * var(--space-lg));
+    margin-bottom: calc(-1 * var(--space-xl));
+    margin-left: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+    margin-right: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+    padding-top: calc(var(--space-xl) + var(--space-lg));
+    padding-bottom: calc(var(--space-xl) + var(--space-lg) + var(--space-xl));
+    padding-inline-start: max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-left, 0px));
+    padding-inline-end: max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-right, 0px));
+    border-bottom: 2px solid color-mix(in oklab, black 12%, var(--color-accent));
+  }
+
+  @media (min-width: 48rem) {
+    .home-block.home-block--profile {
+      margin-left: calc(-1 * (var(--_side-gutter) + var(--space-sm)));
+      margin-right: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+      padding-inline-start: max(calc(var(--space-sm) + var(--space-xs)), env(safe-area-inset-left, 0px));
+      padding-inline-end: max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-right, 0px));
+    }
+  }
+
+  :global(body.site-body--no-marquees) .home-block.home-block--profile {
+    margin-left: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+    margin-right: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+    padding-inline: max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-left, 0px))
+      max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-right, 0px));
+  }
+
+  @media (min-width: 48rem) {
+    :global(body.site-body--no-marquees) .home-block.home-block--profile {
+      margin-left: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+      margin-right: calc(-1 * (var(--_side-gutter) + var(--space-md)));
+      padding-inline: max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-left, 0px))
+        max(calc(var(--space-md) + var(--space-xs)), env(safe-area-inset-right, 0px));
+    }
+  }
+
+  .home-block--profile .home-block__head {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: baseline;
+    column-gap: var(--space-sm);
+    row-gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+    padding-bottom: 0;
+  }
+
+  #heading-profile {
+    scroll-margin-top: 5.5rem;
+  }
+
+  .home-block--profile .home-block__title {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: clamp(2.75rem, 6.5vw, 4rem);
+    letter-spacing: 0.04em;
+    line-height: 1.04;
+    font-weight: 700;
+    text-align: left;
+    color: #fff;
+  }
+
+  .home-block--profile .home-block__tagline {
+    margin: 0;
+    text-align: left;
+    max-width: min(18rem, 100%);
+    color: color-mix(in oklab, white 97%, transparent);
+  }
+
+  /* メイン本文と同じカラム幅（Tips 等の見出しと揃える）+ 横方向を少し詰めて見出し同士の幅感を合わせる */
+  .home-block--profile .home-block__head,
+  .home-profile {
+    width: 100%;
+    max-width: var(--site-max-width);
+    margin-inline: auto;
+    box-sizing: border-box;
+    padding-inline: var(--space-md);
+  }
+
+  .home-profile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .home-profile__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg);
+    width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+  }
+
+  .home-profile__metrics .home-profile__block {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .home-profile__metrics .home-profile__stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-profile__metrics .home-profile__stat-row {
+    flex: 1;
+    width: 100%;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  @media (min-width: 40rem) {
+    .home-profile__metrics {
+      grid-auto-rows: 1fr;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .home-profile__metrics {
+      grid-template-columns: 1fr;
+      grid-auto-rows: auto;
+    }
+  }
+
+  .home-profile__metrics .home-profile__block {
+    width: 100%;
+  }
+
+  .home-profile__identity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .home-profile__name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35em 0.45em;
+    margin: 0;
+    font-size: clamp(0.68rem, 1.75vw, 0.82rem);
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  .home-profile__name-main {
+    font-size: clamp(1.75rem, 4.8vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  .home-profile__name-label {
+    display: inline-flex;
+    flex-direction: column;
+    font-size: 1em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    color: #fff;
+  }
+
+  .home-profile__name-label-line {
+    display: block;
+  }
+
+  .home-profile__block {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 見出し（h3）: プロフィールだけグローバル h3 より強く明示（青背景でも白くはっきり） */
+  .home-block--profile .home-profile__heading {
+    margin: 0 0 var(--space-sm);
+    font-size: clamp(0.9375rem, 2.6vw, 1.0625rem);
+    line-height: 1.35;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    text-shadow:
+      0 1px 2px rgb(0 0 0 / 0.28),
+      0 0 1px rgb(0 0 0 / 0.2);
+  }
+
+  .home-profile__sns {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .home-profile__sns-item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .home-profile__sns-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    border: 2px solid #000;
+    color: #000;
+    background: #fff;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .home-profile__sns-link:hover {
+    opacity: 0.88;
+    transform: scale(1.04);
+  }
+
+  .home-profile__sns-link:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  .home-profile__sns-svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex-shrink: 0;
+  }
+
+  .home-profile__bio {
+    margin: 0;
+    color: color-mix(in oklab, white 98%, transparent);
+    font-size: 0.95rem;
+    line-height: var(--line-height-body);
+  }
+
+  .home-profile__bio p {
+    margin: 0 0 var(--space-sm);
+  }
+
+  .home-profile__bio p:last-child {
+    margin-bottom: 0;
+  }
+
+  .home-profile__stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .home-profile__stats--weight {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .home-profile__stats--weight .home-profile__stat-row {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-profile__stat-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.35rem var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 0.55rem;
+    border: 3px solid #000;
+    background: #fff;
+    color: var(--color-text);
+  }
+
+  .home-profile__stat-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+  }
+
+  .home-profile__stat-main {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-profile__stat-main--with-note {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .home-profile__stat-time {
+    line-height: 1.2;
+  }
+
+
+  .home-profile__unit {
+    margin-left: 0.2em;
+    font-size: 0.65em;
+    font-weight: 700;
+    color: color-mix(in oklab, var(--color-muted) 58%, white 42%);
+  }
+
+  .home-profile__stat-date {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: color-mix(in oklab, var(--color-muted) 58%, white 42%);
+    white-space: nowrap;
+  }
+
+  .home-profile__stat-date.home-profile__stat-date--phrase {
+    white-space: normal;
+    max-width: min(15rem, 70vw);
+    text-align: right;
+    letter-spacing: 0.03em;
+  }
+
+  .home-profile__stat-row .home-profile__stat-date {
+    margin-left: auto;
+  }
+</style>
+
+<style is:global>
+  .home-profile__stat-note {
+    display: block;
+    margin: 0;
+    font-size: 0.68em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    color: color-mix(in oklab, var(--color-muted) 78%, white);
+  }
+</style>

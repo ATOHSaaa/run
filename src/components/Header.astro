@@ -1,0 +1,522 @@
+---
+import { getCollection } from 'astro:content';
+import { getPostDisplayTitle } from '@/utils/post-title';
+import { getBlogPostHref } from '@/utils/blog-post-path';
+import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+
+interface Props {
+  /** 記事詳細など: 横マーキーを出さない */
+  hideSiteMarquees?: boolean;
+}
+
+const { hideSiteMarquees = false } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const tickerProfileHref = `${base}#heading-profile`;
+const tickerProfileLabel =
+  'このブログを書いている人 ：あとーす 1993年生まれ 男 熊本在住';
+
+const latestNewsPost = (await getCollection('blog'))
+  .filter((p) => p.data.category === 'News')
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())[0];
+
+const tickerNewsLabel = latestNewsPost
+  ? `NEWS!：${getPostDisplayTitle(latestNewsPost.data)}`
+  : 'NEWS!：ブログを開設しました';
+const tickerNewsHref = latestNewsPost
+  ? getBlogPostHref(base, latestNewsPost.slug)
+  : undefined;
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="site-header__brand">
+      <span class="site-header__mark-ring" aria-hidden="true">
+        <img
+          src={`${base}images/runner-accent.png`}
+          width="56"
+          height="56"
+          alt=""
+          class="site-header__mark"
+          loading="eager"
+          decoding="async"
+        />
+      </span>
+      <p class="site-header__title">
+        <a href={base}>体重100kgからサブ3を目指すブログ</a>
+      </p>
+    </div>
+    <div class="site-header__tools">
+      <nav class="site-header__nav" aria-label="トップのセクション">
+        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Tips')}>Tips</a>
+        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Gears')}>Gears</a>
+        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Activities')}>
+          Activities
+        </a>
+      </nav>
+      <form class="site-header__search" method="get" action={`${base}search/`} role="search">
+        <label class="sr-only" for="site-header-search-q">記事を検索</label>
+        <div class="site-header__search-field">
+          <span class="site-header__search-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></circle>
+              <path
+                d="M15.25 15.25 21 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </span>
+          <input
+            id="site-header-search-q"
+            class="site-header__search-input"
+            type="search"
+            name="q"
+            placeholder="Search"
+            maxlength="200"
+            autocomplete="off"
+          />
+        </div>
+        <button class="site-header__search-submit" type="submit">GO!</button>
+      </form>
+    </div>
+  </div>
+</header>
+
+{
+  !hideSiteMarquees && (
+    <div class="site-ticker" role="region" aria-label="お知らせとプロフィールへのリンク">
+      <div class="site-ticker__viewport">
+        <div class="site-ticker__track">
+          {
+            [0, 1, 2].map((i) => (
+              <span class="site-ticker__chunk" aria-hidden={i > 0 ? 'true' : undefined}>
+                <span class="site-ticker__row">
+                  <a class="site-ticker__profile-link" href={tickerProfileHref}>
+                    {tickerProfileLabel}
+                  </a>
+                  {
+                    tickerNewsHref ? (
+                      <a class="site-ticker__news-link" href={tickerNewsHref}>
+                        {tickerNewsLabel}
+                      </a>
+                    ) : (
+                      <span class="site-ticker__news">{tickerNewsLabel}</span>
+                    )
+                  }
+                </span>
+              </span>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @keyframes site-ticker-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(calc(-100% / 3), 0, 0);
+    }
+  }
+
+</style>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-sizing: border-box;
+    margin-inline: 0;
+    margin-block: 0;
+    width: 100%;
+    max-width: none;
+    padding: var(--space-md) clamp(0.75rem, 2.8vw, 2.25rem) var(--space-sm);
+    padding-bottom: 24px;
+    border-bottom: 2px solid color-mix(in oklab, black 12%, var(--color-accent));
+    background: var(--color-accent);
+  }
+
+  .site-header__inner {
+    width: 100%;
+    max-width: calc(var(--site-max-width) + 10rem);
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-md);
+    container-type: inline-size;
+    container-name: site-header-inner;
+  }
+
+  .site-header__brand {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-sm);
+    min-width: 0;
+    text-align: left;
+    flex: 1 1 auto;
+  }
+
+  .site-header__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-sm) var(--space-md);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .site-header__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .site-header__search {
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    gap: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .site-header__search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  .site-header__search-icon {
+    position: absolute;
+    left: 0.42rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.82rem;
+    height: 0.82rem;
+    z-index: 2;
+    pointer-events: none;
+    color: var(--color-text);
+  }
+
+  .site-header__search-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .site-header__search-input {
+    width: clamp(6.5rem, 18vw, 11rem);
+    min-width: 0;
+    padding: 0.35rem 0.45rem 0.35rem calc(0.42rem + 0.82rem + 0.55rem);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border: 1px solid color-mix(in oklab, white 55%, var(--color-accent));
+    border-right: none;
+    border-radius: 14px 0 0 14px;
+    background: color-mix(in oklab, white 94%, var(--color-accent-soft));
+    color: var(--color-text);
+    box-sizing: border-box;
+  }
+
+  .site-header__search-input::placeholder {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--color-muted);
+  }
+
+  .site-header__search-input::-webkit-search-decoration,
+  .site-header__search-input::-webkit-search-cancel-button,
+  .site-header__search-input::-webkit-search-results-button,
+  .site-header__search-input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  .site-header__search-input:focus,
+  .site-header__search-input:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: color-mix(in oklab, white 55%, var(--color-accent));
+  }
+
+  .site-header__search-submit:focus,
+  .site-header__search-submit:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: color-mix(in oklab, white 55%, var(--color-accent));
+  }
+
+  .site-header__search-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.45rem;
+    margin: 0;
+    border: 1px solid color-mix(in oklab, white 55%, var(--color-accent));
+    border-radius: 0 14px 14px 0;
+    background: color-mix(in oklab, white 88%, var(--color-accent-soft));
+    color: var(--color-text);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    cursor: pointer;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .site-header__search-submit:hover {
+    background: #fff;
+  }
+
+  .site-header__nav-link {
+    display: inline-block;
+    position: relative;
+    font-size: clamp(0.82rem, 2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .site-header__nav-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.12em;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transform: translateX(-50%);
+    transition: width 0.4s ease;
+    pointer-events: none;
+  }
+
+  .site-header__nav-link:hover::after {
+    width: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header__nav-link::after {
+      transition: none;
+    }
+
+    .site-header__nav-link:hover::after {
+      width: 100%;
+    }
+  }
+
+  .site-header__nav-link:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .site-header__mark-ring {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(44px, 9.2vw, 56px);
+    height: clamp(44px, 9.2vw, 56px);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px color-mix(in oklab, black 12%, transparent);
+  }
+
+  .site-header__mark {
+    width: clamp(38px, 8.4vw, 50px);
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .site-header__title {
+    margin: 0;
+    font-size: clamp(1.15rem, 3.1vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    min-width: 0;
+  }
+
+  .site-header__title a {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  /* 内側幅が足りず2行になった時点で中央寄せ（768px 未満を待たない） */
+  @container site-header-inner (max-width: 64rem) {
+    .site-header__brand {
+      flex: 1 1 100%;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .site-header__title {
+      text-align: center;
+    }
+
+    .site-header__title a {
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .site-header__tools {
+      flex: 1 1 100%;
+      margin-left: 0;
+      width: 100%;
+      max-width: 100%;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    .site-header__nav {
+      justify-content: center;
+      flex-wrap: nowrap;
+      width: auto;
+      flex: 0 1 auto;
+      min-width: 0;
+    }
+
+    .site-header__search {
+      flex: 0 0 auto;
+      margin-inline: 0;
+    }
+  }
+
+  .site-ticker {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    border-bottom: 2px solid #000;
+    box-sizing: border-box;
+  }
+
+  .site-ticker__viewport {
+    overflow: hidden;
+    width: 100%;
+    padding-block: 0.8rem;
+    contain: paint;
+  }
+
+  .site-ticker__track {
+    --site-ticker-gap: 2.5rem;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--site-ticker-gap);
+    flex-shrink: 0;
+    width: max-content;
+    min-width: max-content;
+    will-change: transform;
+    backface-visibility: hidden;
+    animation: site-ticker-marquee 15s linear infinite;
+  }
+
+  .site-ticker:hover .site-ticker__track,
+  .site-ticker:focus-within .site-ticker__track {
+    animation-play-state: paused;
+  }
+
+  .site-ticker__chunk {
+    flex-shrink: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.45;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  .site-ticker__row {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--site-ticker-gap);
+  }
+
+  .site-ticker__news,
+  .site-ticker__news-link {
+    flex-shrink: 0;
+  }
+
+  .site-ticker__news-link,
+  .site-ticker__profile-link {
+    position: relative;
+    z-index: 1;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .site-ticker__news-link:hover,
+  .site-ticker__news-link:focus-visible,
+  .site-ticker__profile-link:hover,
+  .site-ticker__profile-link:focus-visible {
+    color: var(--color-accent);
+  }
+
+  .site-ticker__news-link:focus-visible,
+  .site-ticker__profile-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+</style>
+
+<script>
+  const SITE_HEADER_STICKY_HEIGHT_EVENT = 'site-header-sticky-height';
+
+  function syncSiteHeaderStickyHeight() {
+    const header = document.querySelector('.site-header');
+    if (!(header instanceof HTMLElement)) return;
+
+    const heightPx = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--site-header-sticky-height', `${heightPx}px`);
+    document.documentElement.dispatchEvent(new CustomEvent(SITE_HEADER_STICKY_HEIGHT_EVENT));
+  }
+
+  syncSiteHeaderStickyHeight();
+
+  const header = document.querySelector('.site-header');
+  if (header instanceof HTMLElement && 'ResizeObserver' in window) {
+    const observer = new ResizeObserver(syncSiteHeaderStickyHeight);
+    observer.observe(header);
+  }
+
+  window.addEventListener('resize', syncSiteHeaderStickyHeight, { passive: true });
+  window.addEventListener('orientationchange', syncSiteHeaderStickyHeight, { passive: true });
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(syncSiteHeaderStickyHeight);
+  }
+</script>

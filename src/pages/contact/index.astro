@@ -1,0 +1,88 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { siteProfile } from '@/config/profile';
+
+const base = import.meta.env.BASE_URL;
+const twitter = siteProfile.sns.find((s) => s.platform === 'twitter');
+const website = siteProfile.sns.find((s) => s.platform === 'website');
+---
+
+<BaseLayout title="お問い合わせ" description="このブログへのお問い合わせ方法です。">
+  <header class="page-head">
+    <h1>お問い合わせ</h1>
+    <p class="page-head__sub">ご連絡・ご感想について</p>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="prose static-prose">
+    <p>
+      記事へのご感想、誤記のご指摘、リンク切れの報告などがありましたら、下記からご連絡ください。個人運営のため、返信までお時間をいただく場合があります。
+    </p>
+
+    <h2>連絡方法</h2>
+    <ul>
+      {
+        twitter && (
+          <li>
+            <strong>X（旧 Twitter）</strong>：
+            <a href={twitter.url} rel="noopener noreferrer" target="_blank">
+              @atohsaaa
+            </a>
+            — DM またはリプライでお気軽にどうぞ
+          </li>
+        )
+      }
+      {
+        website && (
+          <li>
+            <strong>ホームページ</strong>：
+            <a href={website.url} rel="noopener noreferrer" target="_blank">
+              atohs.me
+            </a>
+          </li>
+        )
+      }
+    </ul>
+
+    <h2>お願い</h2>
+    <p>
+      医療行為や緊急を要するご相談には対応できません。トレーニング・健康に関する判断は、必ずご自身の体調と専門家の助言を優先してください。
+    </p>
+  </div>
+
+  <p class="back">
+    <a href={`${base}about/`}>← このブログについて</a>
+  </p>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .page-head__sub {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .back {
+    margin-top: var(--space-xl);
+    font-size: 0.95rem;
+  }
+
+  .back a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .back a:hover {
+    border-bottom-color: var(--color-accent);
+  }
+</style>

@@ -1,0 +1,894 @@
+---
+import AmazonAffiliateCard from '@/components/AmazonAffiliateCard.astro';
+import AmazonAffiliateSectionHeading from '@/components/AmazonAffiliateSectionHeading.astro';
+import AmazonAffiliateSidebar from '@/components/AmazonAffiliateSidebar.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import ActivitiesCalendar from '@/components/ActivitiesCalendar.astro';
+import { getCollection } from 'astro:content';
+import { SHOW_ACTIVITIES_CALENDAR } from '@/config/features';
+import { formatDateYmd } from '@/utils/date';
+import { getGearDisplayName, getPostDisplayTitle } from '@/utils/post-title';
+import { getCategoryDisplayLabel, getCategoryPillModifier } from '@/utils/category-label';
+import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+import { assertBlogEntryFolder } from '@/utils/blog-post-path';
+import { extractTocFromMarkdown } from '@/utils/markdown-toc';
+import { getPracticeLogAsideFromMarkdownBody } from '../../../practice-log-parse.mjs';
+import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
+import { getAmazonAssociateTag } from '@/config/amazon-affiliate';
+import { resolveAmazonAffiliateItems } from '@/utils/resolve-amazon-affiliate-items';
+import { prefetchAmazonProductImages } from '../../../amazon-creators-products.mjs';
+import { getBlogOgImageUrl } from '@/utils/og-image/blog-og-url';
+import { resolveBlogTags } from '@/utils/blog-tags';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  for (const post of posts) {
+    assertBlogEntryFolder(post);
+  }
+  await prefetchAmazonProductImages(posts);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const articleTags = resolveBlogTags(post);
+const base = import.meta.env.BASE_URL;
+const { Content, remarkPluginFrontmatter } = await post.render();
+const practiceFromBody = getPracticeLogAsideFromMarkdownBody(post.body, { base });
+const practiceLogHtml =
+  practiceFromBody?.html ??
+  (typeof remarkPluginFrontmatter?.practiceLogHtml === 'string'
+    ? remarkPluginFrontmatter.practiceLogHtml
+    : undefined);
+const practiceLogTitleRaw =
+  (practiceFromBody?.title && practiceFromBody.title.trim()) ||
+  (typeof remarkPluginFrontmatter?.practiceLogTitle === 'string'
+    ? remarkPluginFrontmatter.practiceLogTitle.trim()
+    : '');
+/** Activities: フロントマター title → フェンスのタイトル行 → 日付（中黒行は本文上のカードのみ） */
+const displayTitle =
+  post.data.category === 'Activities'
+    ? getPostDisplayTitle(post.data, { practiceLogTitle: practiceLogTitleRaw })
+    : getPostDisplayTitle(post.data);
+const needsActivitiesCalendar = post.data.category === 'Activities' && SHOW_ACTIVITIES_CALENDAR;
+const allActivitiesPosts = needsActivitiesCalendar
+  ? sortBlogPostsByPubDateDesc(
+      (await getCollection('blog')).filter((p) => p.data.category === 'Activities'),
+    )
+  : [];
+const toc = extractTocFromMarkdown(post.body);
+const hasToc = toc.length > 0;
+const amazonAffiliateItems = await resolveAmazonAffiliateItems(
+  post.data.amazonAffiliate,
+  getAmazonAssociateTag(),
+);
+const hasAmazonAffiliates = amazonAffiliateItems.length > 0;
+const hasSidebar = hasToc || hasAmazonAffiliates;
+const isActivities = post.data.category === 'Activities';
+const usesActivitiesContentWidth =
+  post.data.category === 'Activities' || post.data.category === 'News';
+const articleMainClasses = ['site-main--article-detail'];
+if (hasSidebar) articleMainClasses.push('site-main--article-toc');
+const mainClass = articleMainClasses.join(' ');
+const articlePracticeVars = `--practice-log-runner-icon:url('${base}images/runner-accent.png');--practice-log-trail-runner-icon:url('${base}images/activity-trail-run.png');--practice-log-hike-icon:url('${base}images/icons/activities/activity-hike.png');--practice-log-road-icon:url('${base}images/practice-log-road.svg');--practice-log-stopwatch-icon:url('${base}images/practice-log-stopwatch.svg');--practice-log-ascent-icon:url('${base}images/practice-log-ascent.svg')`;
+const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
+---
+
+<BaseLayout
+  title={displayTitle}
+  description={post.data.description}
+  ogImage={ogImage}
+  ogType="article"
+  mainClass={mainClass}
+  hideSiteMarquees
+>
+  <article
+    class:list={[
+      'article',
+      hasSidebar && 'article--has-toc',
+      isActivities && 'article--activities',
+    ]}
+    style={articlePracticeVars}
+  >
+    <header class="article__head">
+      <div class="article__title-stack">
+        <div class="article__title-kicker">
+          <a
+            class={`pill pill--${getCategoryPillModifier(post.data.category)}`}
+            href={getBlogCategoryListHref(base, post.data.category)}
+          >
+            {getCategoryDisplayLabel(post.data.category)}
+          </a>
+          <div class="article__title-meta">
+            {
+              articleTags.length > 0 && (
+                <span class="article__tags" aria-label="タグ">
+                  {articleTags.map((tag) => (
+                    <a href={`${base}tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
+                  ))}
+                </span>
+              )
+            }
+            <time class="article__date" datetime={post.data.pubDate.toISOString()}>
+              {formatDateYmd(post.data.pubDate)}
+            </time>
+          </div>
+        </div>
+        <div class="article__title-row">
+          <h1 class="article__title">{displayTitle}</h1>
+        </div>
+      </div>
+    </header>
+
+    <WaveDivider variant="wave" />
+
+    <div
+      class:list={[
+        'article__content-with-sidebar',
+        hasSidebar && 'article__content-with-sidebar--has-toc',
+      ]}
+    >
+      <div class="article__body-wrap">
+        <div class="article__body prose">
+          {
+            practiceLogHtml && (
+              <div class="article__practice article__practice--above-body" set:html={practiceLogHtml} />
+            )
+          }
+          <div
+            class:list={[
+              'article__main',
+              usesActivitiesContentWidth && 'article__main--activities',
+            ]}
+          >
+            <Content />
+            {
+              amazonAffiliateItems.length > 0 && (
+                <section
+                  class="article__amazon-affiliates"
+                  aria-labelledby="article-amazon-affiliates-heading"
+                >
+                  <AmazonAffiliateSectionHeading id="article-amazon-affiliates-heading" />
+                  {amazonAffiliateItems.map((aff) => (
+                    <AmazonAffiliateCard
+                      href={aff.href}
+                      label={aff.label}
+                      productName={aff.productName ?? getGearDisplayName(post.data)}
+                      imageSrc={aff.imageSrc ?? post.data.coverImage}
+                    />
+                  ))}
+                </section>
+              )
+            }
+          </div>
+        </div>
+      </div>
+      {
+        hasSidebar && (
+          <aside
+            class="article-sidebar"
+            aria-label={hasToc ? '目次と関連商品' : '関連商品'}
+          >
+            <div class="article-sidebar__stick">
+              {
+                hasToc && (
+                  <div class="article-sidebar__toc">
+                    <p id="toc-sidebar-heading" class="article-toc__heading">Index</p>
+                    <nav class="article-toc__nav" aria-labelledby="toc-sidebar-heading">
+                      <ol class="article-toc__list">
+                        {
+                          toc.map((item) => (
+                            <li
+                              class:list={[
+                                'article-toc__item',
+                                `article-toc__item--d${item.depth}`,
+                              ]}
+                            >
+                              <a class="article-toc__link" href={`#${item.slug}`}>
+                                {item.text}
+                              </a>
+                            </li>
+                          ))
+                        }
+                      </ol>
+                    </nav>
+                  </div>
+                )
+              }
+              {
+                hasAmazonAffiliates && (
+                  <AmazonAffiliateSidebar
+                    items={amazonAffiliateItems.map((aff) => ({
+                      href: aff.href,
+                      label: aff.label,
+                      productName: aff.productName ?? getGearDisplayName(post.data),
+                      imageSrc: aff.imageSrc ?? post.data.coverImage,
+                    }))}
+                  />
+                )
+              }
+            </div>
+          </aside>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    needsActivitiesCalendar && allActivitiesPosts.length > 0 && (
+      <section class="article-activities-calendar">
+        <ActivitiesCalendar
+          activitiesPosts={allActivitiesPosts}
+          base={base}
+          anchorDate={post.data.pubDate}
+          rootId="article-activities-calendar-root"
+        />
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /**
+   * 記事詳細: main の右パディングだけ狭め（左は BaseLayout のまま）。
+   */
+  :global(main.site-main.site-main--article-detail) {
+    padding-right: max(0.06rem, env(safe-area-inset-right, 0px));
+  }
+
+
+  /**
+   * 目次付き記事: main の下余白を詰め、フッター上線をアクセントで繋ぐ（:global は子コンポーネントの footer 向け）。
+   */
+  @media (min-width: 62rem) {
+    :global(main.site-main.site-main--article-toc) {
+      padding-bottom: var(--space-sm);
+    }
+
+    :global(main.site-main.site-main--article-toc ~ footer.site-footer) {
+      margin-top: 0;
+      border-top: 2px solid var(--color-accent);
+    }
+  }
+
+  .article__head {
+    margin-bottom: var(--space-sm);
+  }
+
+  .article__title-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .article__title-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    min-width: 0;
+    width: 100%;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+
+  .article__title-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-sm);
+    row-gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .article__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--space-md);
+    min-width: 0;
+    width: 100%;
+    row-gap: var(--space-sm);
+  }
+
+  .article__title {
+    margin: 0;
+    letter-spacing: 0.04em;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    width: fit-content;
+  }
+
+  .article__date {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: clamp(0.82rem, 2.1vw, 0.95rem);
+    font-weight: 600;
+    line-height: 1.35;
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .article__title-meta .article__tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+
+  .article__title-meta .article__tags a {
+    font-weight: 600;
+    text-decoration: none;
+    color: color-mix(in oklab, var(--color-accent) 90%, white);
+  }
+
+  .article__title-meta .article__tags a:hover {
+    color: color-mix(in oklab, var(--color-accent) 44%, white);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  a.pill {
+    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-thickness: 0;
+    text-underline-offset: 0;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  a.pill:hover {
+    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-thickness: 0;
+    background: color-mix(in oklab, var(--color-accent-soft) 50%, white);
+    border-color: color-mix(in oklab, var(--color-accent) 48%, transparent);
+  }
+
+  a.pill:focus:not(:focus-visible),
+  a.pill:active,
+  a.pill:visited {
+    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-thickness: 0;
+  }
+
+  a.pill:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .article__content-with-sidebar {
+    margin-top: var(--space-md);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    align-items: start;
+  }
+
+  @media (min-width: 62rem) {
+    .article--has-toc {
+      --article-toc-sticky-top: calc(
+        env(safe-area-inset-top, 0px) + var(--site-header-sticky-height) + var(--space-sm)
+      );
+      --article-toc-sticky-max-height: calc(
+        100dvh - var(--article-toc-sticky-top) - var(--space-lg)
+      );
+    }
+
+    /**
+     * 行の高さを本文に合わせて伸ばし、aside 内の sticky がスクロール追従できるようにする。
+     */
+    .article__content-with-sidebar--has-toc {
+      grid-template-columns: minmax(0, 1fr) 14.25rem;
+      gap: 3rem;
+      align-items: stretch;
+    }
+
+    .article__content-with-sidebar--has-toc .article__body-wrap {
+      align-self: start;
+      padding-inline-end: var(--space-sm);
+      box-sizing: border-box;
+    }
+
+    .article__content-with-sidebar--has-toc .article-sidebar {
+      display: flex;
+      flex-direction: column;
+      align-self: stretch;
+      margin-top: calc(-1 * var(--space-lg));
+      padding: calc(0.2rem + var(--space-lg)) 0 var(--space-xl)
+        calc(var(--space-md) + 0.45rem);
+      background: color-mix(in oklab, var(--color-bg) 94%, var(--color-accent-soft));
+      box-sizing: border-box;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .article__content-with-sidebar--has-toc .article-sidebar__stick {
+      position: sticky;
+      top: var(--article-toc-sticky-top);
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+      min-width: 0;
+      max-height: var(--article-toc-sticky-max-height);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      box-sizing: border-box;
+    }
+
+    .article__content-with-sidebar--has-toc
+      .article-sidebar__stick
+      > :global(.amazon-affiliate-sidebar:first-child) {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+  }
+
+  .article-sidebar {
+    position: relative;
+    min-width: 0;
+    font-size: 0.88rem;
+    color: var(--color-text);
+    border-left: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article__body-wrap {
+    min-width: 0;
+  }
+
+  .article__main--activities {
+    width: 100%;
+    max-width: var(--site-activities-max-width);
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  .article__body {
+    margin-top: 0;
+  }
+
+  .article__body.prose {
+    font-weight: 500;
+  }
+
+  .article__body.prose .article__main {
+    text-align: justify;
+    text-justify: inter-character;
+  }
+
+  .article__body.prose .article__main :global(h1),
+  .article__body.prose .article__main :global(h2),
+  .article__body.prose .article__main :global(h3),
+  .article__body.prose .article__main :global(h4),
+  .article__body.prose .article__main :global(h5),
+  .article__body.prose .article__main :global(h6),
+  .article__body.prose .article__main :global(pre) {
+    text-align: start;
+  }
+
+  .article__body.prose .article__main :global(p:has(+ .article-figure)) {
+    margin-bottom: 48px;
+  }
+
+  .article__body.prose .article__main :global(.article-figure) {
+    margin: var(--space-md) 0 48px;
+    padding-inline: clamp(2rem, 6vw, 3.25rem);
+    box-sizing: border-box;
+  }
+
+  .article__body.prose .article__main :global(.article-figure__img),
+  .article__body.prose .article__main :global(.article-figure picture),
+  .article__body.prose .article__main :global(.article-figure img),
+  .article__body.prose .article__main :global(p > img) {
+    display: block;
+    height: auto;
+    box-sizing: border-box;
+    border: 3px solid #000;
+    border-radius: 0.4rem;
+  }
+
+  .article__body.prose .article__main :global(.article-figure:not(.article-figure--portrait) img),
+  .article__body.prose .article__main :global(.article-figure:not(.article-figure--portrait) picture),
+  .article__body.prose .article__main :global(p > img) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /** 縦長（スクリーンショット等）は本文幅いっぱいにせず中央寄せ（:not より後に書いて上書きを防ぐ） */
+  .article__body.prose .article__main :global(.article-figure--portrait) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .article__body.prose .article__main :global(.article-figure--portrait .article-figure__img),
+  .article__body.prose .article__main :global(.article-figure--portrait picture),
+  .article__body.prose .article__main :global(.article-figure--portrait img) {
+    width: auto;
+    max-width: min(100%, 20rem);
+  }
+
+  .article__body.prose .article__main :global(p:has(> img)) {
+    margin-bottom: 48px;
+    padding-inline: clamp(2rem, 6vw, 3.25rem);
+    box-sizing: border-box;
+  }
+
+  .article__body.prose .article__main :global(.article-figure__caption) {
+    margin-top: var(--space-md);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-align: center;
+    color: var(--color-text);
+  }
+
+  .article-toc__nav {
+    margin: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .article-toc__heading {
+    flex-shrink: 0;
+    margin: 0 0 var(--space-xs);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  .article-toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 0.85rem;
+    border-left: 4px solid transparent;
+    position: relative;
+  }
+
+  .article-toc__list::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 12px;
+    left: 1px;
+    width: 3px;
+    background: color-mix(in oklab, var(--color-accent) 28%, var(--color-border));
+    pointer-events: none;
+  }
+
+  .article-toc__item {
+    position: relative;
+    margin: 0;
+    padding: 0.28rem 0 0.28rem 0.65rem;
+  }
+
+  .article-toc__item::before {
+    content: '';
+    position: absolute;
+    left: calc(-0.85rem - 2px);
+    top: 0.9em;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg);
+    box-sizing: border-box;
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+
+  .article-toc__item--d3,
+  .article-toc__item--d4,
+  .article-toc__item--d5,
+  .article-toc__item--d6 {
+    padding-left: 1.1rem;
+  }
+
+  .article-toc__item--d3::before,
+  .article-toc__item--d4::before,
+  .article-toc__item--d5::before,
+  .article-toc__item--d6::before {
+    width: 7px;
+    height: 7px;
+    margin-top: -3.5px;
+    left: calc(-0.85rem - 0.5px);
+    background: color-mix(in oklab, var(--color-accent) 55%, var(--color-muted));
+  }
+
+  .article-toc__link {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+
+  .article-toc__link:hover {
+    color: var(--color-accent);
+  }
+
+  /**
+   * 記事ページの本文（Markdown）内 h2 のみ。
+   * 一覧・トップの h2 は global.css のまま。微調整はこのブロックだけで足ります。
+   */
+  .article__body.prose :global(h2) {
+    font-size: var(--heading-h2-size);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin: var(--space-lg) 0 var(--space-sm);
+    scroll-margin-top: 5.5rem;
+  }
+
+  .article__body.prose :global(h3) {
+    margin-top: 1.55em;
+    margin-bottom: 0.4em;
+    scroll-margin-top: 5.5rem;
+  }
+
+  .article__body.prose :global(h4),
+  .article__body.prose :global(h5),
+  .article__body.prose :global(h6) {
+    scroll-margin-top: 5.5rem;
+  }
+
+  .article__body.prose .article__main :global(table) {
+    width: 100%;
+    margin: var(--space-md) 0;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    text-align: start;
+    text-justify: auto;
+  }
+
+  .article__body.prose .article__main :global(th),
+  .article__body.prose .article__main :global(td) {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--color-border);
+    vertical-align: top;
+  }
+
+  .article__body.prose .article__main :global(th) {
+    font-weight: 700;
+    background: color-mix(in oklab, var(--color-accent-soft) 55%, white);
+  }
+
+  .article__body :global(p) {
+    margin: 0 0 var(--space-md);
+  }
+
+  .article__practice.article__practice--above-body {
+    width: 100%;
+    margin: 0 0 40px;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .article__practice.article__practice--above-body::after {
+    content: '';
+    display: block;
+    width: 100vw;
+    max-width: none;
+    height: 3px;
+    margin-left: calc(50% - 50vw);
+    background: var(--color-accent);
+  }
+
+  .article__practice :global(.article__practice-log) {
+    margin: 0;
+    padding-top: 0.2rem;
+    padding-bottom: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0;
+    max-width: 100%;
+    text-align: center;
+    font-size: clamp(1rem, 2.8vw, 1.15rem);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+    line-height: 1.55;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .article__practice :global(.article__practice-log__sep) {
+    flex: 0 0 auto;
+    align-self: center;
+    line-height: 1;
+    font-weight: 900;
+    padding-inline: 0.06em;
+    user-select: none;
+  }
+
+  .article__practice--above-body :global(.article__practice-log) {
+    margin-top: 0;
+  }
+
+  .article__practice :global(.article__practice-log__menu-link) {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 0.2em;
+  }
+
+  .article__practice :global(.article__practice-log__menu-link:hover) {
+    color: var(--color-accent);
+  }
+
+  .article__practice :global(.article__practice-log__menu-link:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .article__practice :global(.article__practice-log__menu--jogging) {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .article__practice :global(.article__practice-log__menu--jogging::before) {
+    content: '';
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-runner-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article__practice :global(.article__practice-log__menu--trail-run) {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .article__practice :global(.article__practice-log__menu--trail-run::before) {
+    content: '';
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-trail-runner-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article__practice :global(.article__practice-log__menu--trekking) {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .article__practice :global(.article__practice-log__menu--trekking::before) {
+    content: '';
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-hike-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article__practice :global(.article__practice-log__dist),
+  .article__practice :global(.article__practice-log__pace),
+  .article__practice :global(.article__practice-log__ascent) {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .article__practice :global(.article__practice-log__dist::before) {
+    content: '';
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-road-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article__practice :global(.article__practice-log__pace::before) {
+    content: '';
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-stopwatch-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article__practice :global(.article__practice-log__ascent::before) {
+    content: '';
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.12em;
+    flex-shrink: 0;
+    background-image: var(--practice-log-ascent-icon);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .article-activities-calendar {
+    position: relative;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    max-width: var(--site-max-width);
+    margin-inline: auto;
+    padding-inline: var(--space-md);
+    box-sizing: border-box;
+    overflow-x: visible;
+  }
+
+  .article-activities-calendar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 100vw;
+    height: 3px;
+    margin-left: -50vw;
+    background: var(--color-accent);
+    pointer-events: none;
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import { SHOW_ACTIVITIES_CALENDAR } from '@/config/features';
+import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+
+const base = import.meta.env.BASE_URL;
+const tipsHref = getBlogCategoryListHref(base, 'Tips');
+const gearsHref = getBlogCategoryListHref(base, 'Gears');
+const newsHref = getBlogCategoryListHref(base, 'News');
+const blogIndexHref = `${base}blog/`;
+const activitiesHref = getBlogCategoryListHref(base, 'Activities');
+---
+
+<BaseLayout
+  title="このブログについて"
+  description="体重100kgからサブ3を目指す個人ブログの目的と、サイトの構成について。"
+>
+  <header class="page-head">
+    <h1>このブログについて</h1>
+  </header>
+
+  <WaveDivider variant="squiggle" />
+
+  <div class="prose static-prose">
+    <p>
+      体重が100kgあった頃からランニングを始め、減量と走りを続けながら、いつかフルマラソンでサブ3を目指す過程を書き留める個人ブログです。主に自分用の記録ですが、同じように走り始めた方やダイエット中の方の参考になればうれしいです。
+    </p>
+
+    <h2>トップページの構成</h2>
+    <p>
+      <a href={base}>トップ</a>では、次のブロックをこの順で掲載しています。
+    </p>
+    <ul>
+      <li>
+        <strong><a href={tipsHref}>Tips</a></strong> — 直近の記事を数本
+      </li>
+      <li>
+        <strong><a href={gearsHref}>Gears</a></strong> — お気に入りのものをカード形式で
+      </li>
+      <li>
+        <strong><a href={activitiesHref}>Activities</a></strong> — 日々の走りやトレッキングの記録{
+          SHOW_ACTIVITIES_CALENDAR ? '（月カレンダー付き）' : ''
+        }
+      </li>
+      <li>
+        <strong><a href={`${base}#heading-profile`}>プロフィール</a></strong> — 管理人の自己紹介と記録タイムなど
+      </li>
+    </ul>
+
+    <h2>記事の種類</h2>
+    <p>記事は大きく4種類に分かれています。</p>
+    <ul>
+      <li>
+        <strong><a href={activitiesHref}>Activities</a></strong> — ジョギングやトレッキングなど、運動した日のメモ。記事の先頭に距離・ペースなどの一行サマリー（練習ログ）があり、{
+          SHOW_ACTIVITIES_CALENDAR ? 'トップや各記事の下では月カレンダーからも辿れます。' : 'トップから直近の記事を読めます。'
+        }
+        活動の種類（例: ジョギング）をクリックすると、同じ種目の記録一覧にも飛べます。入口は<a href={activitiesHref}>Activities 一覧</a>や<a href={`${base}#heading-diary`}>トップの Activities ブロック</a>が中心です（<a href={blogIndexHref}>記事一覧</a>には含めていません）。
+      </li>
+      <li>
+        <strong><a href={tipsHref}>Tips</a></strong> — 減量やランニングのなかで得たコツ・気づき。整理して残しておくメモ向けです。
+      </li>
+      <li>
+        <strong><a href={gearsHref}>Gears</a></strong> — シューズやガジェットなど、実際に使っているものの感想。必要に応じて Amazon などへのリンクを載せることがあります。
+      </li>
+      <li>
+        <strong><a href={newsHref}>お知らせ</a></strong> — ブログの開設など、サイトに関すること。
+      </li>
+    </ul>
+
+    <h2>そのほかのページ</h2>
+    <ul>
+      <li><a href={`${base}blog/`}>記事一覧</a> — Tips・Gears・お知らせの一覧</li>
+      <li><a href={`${base}search/`}>記事を検索</a> — タイトルや説明からキーワード検索</li>
+      <li><a href={`${base}tags/`}>タグ一覧</a> — タグから記事を探す</li>
+      <li><a href={`${base}profile/`}>管理人プロフィール</a> — プロフィールの詳細</li>
+      <li><a href={`${base}contact/`}>お問い合わせ</a> — 連絡方法</li>
+      <li><a href={`${base}privacy/`}>プライバシーポリシー</a></li>
+    </ul>
+
+    <h2>運営について</h2>
+    <p>
+      記事は Markdown で書き、Astro で静的サイトとして公開しています。ここに書いていることは個人の経験・感想であり、医療やトレーニングの専門的なアドバイスではありません。体調や痛みがあるときは、無理をせず専門家に相談してください。
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-head h1 {
+    margin: 0;
+  }
+
+  /* global.css の a より優先（Astro スコープ） */
+  .static-prose :global(a),
+  .static-prose :global(a:visited) {
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--color-muted) 70%, var(--color-border));
+    text-underline-offset: 0.16em;
+    text-decoration-thickness: 1px;
+  }
+
+  .static-prose :global(a:hover),
+  .static-prose :global(a:focus-visible) {
+    color: var(--color-text);
+    text-decoration-color: var(--color-muted);
+  }
+
+  .static-prose :global(strong a) {
+    font-weight: inherit;
+    color: inherit;
+  }
+</style>

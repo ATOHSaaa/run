@@ -1,0 +1,238 @@
+@import 'yakuhanjp/dist/css/yakuhanjp_s.css';
+
+:root {
+  color-scheme: light;
+  /* イラストのショート・ソールのブルーに合わせたアクセント */
+  --color-accent: #1d4ed8;
+  --color-accent-soft: color-mix(in oklab, var(--color-accent) 12%, white);
+  /* ラスタアイコン（public/images/icons/activities/）と線画SVGの共通トークン。ガイド: 太め黒線・白塗り・深い青アクセント */
+  --illustration-outline: #141414;
+  --illustration-fill: #ffffff;
+  --illustration-accent: var(--color-accent);
+  --color-text: #141414;
+  --color-muted: #5c5c5c;
+  --color-border: #e8e8e8;
+  --color-bg: #ffffff;
+  /* Inter（欧文）+ YakuHanJPs（括弧類のみ半角）+ Zen Kaku Gothic New（和文） */
+  --font-sans:
+    Inter, YakuHanJPs, "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", "BIZ UDPGothic", "Meiryo", sans-serif;
+  --space-xs: 0.35rem;
+  --space-sm: 0.65rem;
+  --space-md: 1.1rem;
+  --space-lg: 1.75rem;
+  --space-xl: 2.5rem;
+  /** 記事ページ目次など: sticky ヘッダー直下に置くときの top オフセット */
+  /* 初期値。Header.astro の script が実測高さ（px）で上書きする */
+  --site-header-sticky-height: 5.75rem;
+  /** メインカラム（トップ・記事・フッター内側の揃え幅） */
+  --site-max-width: 68rem;
+  /** Activities 記事・セクション（本文は Tips より少し狭く） */
+  --site-activities-max-width: 40rem;
+  /* 見出し階層（本文 .prose および main 内 h1〜h6） */
+  --heading-h1-size: 45px;
+  --heading-h2-size: 32px;
+  --heading-h3-size: 24px;
+  --heading-h4-size: 20px;
+  --heading-h5-size: 17px;
+  --heading-h6-size: 15px;
+  --line-height-body: 1.85;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 105%;
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: clip;
+  /* 行頭・行末の約物（禁則処理）と行末の見た目 */
+  line-break: strict;
+  word-break: normal;
+  hanging-punctuation: allow-end;
+  text-wrap: pretty;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: var(--heading-h1-size);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--heading-h2-size);
+  line-height: 1.25;
+  font-weight: 700;
+  margin-top: 0.6em !important;
+  margin-bottom: 0.5em !important;
+}
+
+h3 {
+  font-size: var(--heading-h3-size);
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+h4 {
+  font-size: var(--heading-h4-size);
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: var(--heading-h5-size);
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+h6 {
+  font-size: var(--heading-h6-size);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration-color: color-mix(
+    in oklab,
+    var(--color-accent) 45%,
+    transparent
+  );
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* 記事本文: サイト内リンクは太字にしない（Markdown の **リンク** 対策） */
+.article__body.prose .article__main a[href^="/"]:not([href^="//"]) {
+  font-weight: inherit;
+}
+
+.article__body.prose .article__main strong:has(> a[href^="/"]:not([href^="//"])),
+.article__body.prose .article__main a[href^="/"]:not([href^="//"]) strong {
+  font-weight: inherit;
+}
+
+.prose {
+  max-width: 100%;
+  width: 100%;
+}
+
+.prose pre,
+.prose code {
+  font-family: ui-monospace, "IBM Plex Mono", monospace;
+  font-size: 0.92em;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose :where(h1) {
+  margin-top: 0;
+  margin-bottom: 0.55em;
+}
+
+.prose :where(h2) {
+  margin-top: 1.5em !important;
+  margin-bottom: 0.45em !important;
+}
+
+.prose :where(h3) {
+  margin-top: 1.1em;
+  margin-bottom: 0.4em;
+}
+
+.prose :where(h4) {
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+}
+
+.prose :where(h5) {
+  margin-top: 0.95em;
+  margin-bottom: 0.3em;
+}
+
+.prose :where(h6) {
+  margin-top: 0.9em;
+  margin-bottom: 0.3em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.practice-log-card {
+  display: none;
+}
+
+/** about / profile / privacy / contact などの静的本文 */
+.static-prose {
+  max-width: 100%;
+}
+
+.static-prose p {
+  margin: 0 0 var(--space-md);
+  color: var(--color-text);
+  text-align: justify;
+  text-justify: inter-character;
+}
+
+.static-prose h2 {
+  margin: var(--space-lg) 0 var(--space-sm);
+  text-align: start;
+}
+
+.static-prose ul,
+.static-prose ol {
+  margin: 0 0 var(--space-md);
+  padding-left: 1.25rem;
+  color: var(--color-text);
+}
+
+.static-prose li {
+  margin-bottom: var(--space-xs);
+}
+
+.static-prose a,
+.static-prose a:visited {
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-muted) 70%, var(--color-border));
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: 1px;
+}
+
+.static-prose a:hover,
+.static-prose a:focus-visible {
+  color: var(--color-text);
+  text-decoration-color: var(--color-muted);
+}
+
+.static-prose strong a {
+  font-weight: inherit;
+  color: inherit;
+}
+

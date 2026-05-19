@@ -1,0 +1,32 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment
+.env
+.env.*
+!.env.example
+.env.production
+
+# macOS
+.DS_Store
+
+# IDE
+.idea
+.vscode
+
+# note からのエクスポート（参照用・リポジトリには含めない）
+note-export/
+
+# image tooling (local venv / rembg model cache)
+.venv-img/
+.cache/

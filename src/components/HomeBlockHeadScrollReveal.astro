@@ -1,0 +1,56 @@
+---
+/** トップの `.home-block__head--scroll-reveal` をスクロールでふわっと表示（CSS + IO） */
+---
+
+<style is:global>
+  .home-block__head--scroll-reveal {
+    opacity: 0;
+    transform: translate3d(0, 1.1rem, 0);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .home-block__head--scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-block__head--scroll-reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+      will-change: auto;
+    }
+  }
+</style>
+
+<script>
+  function initHomeBlockHeadScrollReveal() {
+    const heads = document.querySelectorAll('.home-block__head--scroll-reveal');
+    if (!heads.length) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      heads.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -6% 0px' },
+    );
+
+    heads.forEach((el) => observer.observe(el));
+  }
+
+  initHomeBlockHeadScrollReveal();
+  document.addEventListener('astro:page-load', initHomeBlockHeadScrollReveal);
+</script>

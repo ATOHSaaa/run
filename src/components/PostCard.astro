@@ -1,0 +1,213 @@
+---
+import { formatDateYmd } from '@/utils/date';
+
+interface Props {
+  href: string;
+  title: string;
+  pubDate: Date;
+  headingLevel?: 'h2' | 'h3';
+  tags?: string[];
+  /** カテゴリ一覧: 日付をタグ行の右に表示（カード内の日付行は出さない） */
+  dateWithTags?: boolean;
+  /** トップ Tips など: スマホでタイトル直後に日付（48rem 以上は下段） */
+  inlineTitleDate?: boolean;
+}
+
+const {
+  href,
+  title,
+  pubDate,
+  headingLevel = 'h2',
+  tags = [],
+  dateWithTags = false,
+  inlineTitleDate = false,
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+const HeadingTag = headingLevel;
+---
+
+<article class="post-card-wrap">
+  <a href={href} class:list={['post-card', inlineTitleDate && 'post-card--inline-date']}>
+    {
+      inlineTitleDate && !dateWithTags ? (
+        <div class="post-card__lead">
+          <HeadingTag class="post-card__title">{title}</HeadingTag>
+          <time class="post-card__lead-date" datetime={pubDate.toISOString()}>
+            {formatDateYmd(pubDate)}
+          </time>
+        </div>
+      ) : (
+        <>
+          <HeadingTag class="post-card__title">{title}</HeadingTag>
+          {
+            !dateWithTags && (
+              <p class="post-card__meta">
+                <time datetime={pubDate.toISOString()}>{formatDateYmd(pubDate)}</time>
+              </p>
+            )
+          }
+        </>
+      )
+    }
+  </a>
+  {
+    (tags.length > 0 || dateWithTags) && (
+      <div class="post-card__footer">
+        {
+          tags.length > 0 && (
+            <div class="post-card__tags">
+              {tags.map((tag) => (
+                <a class="post-card__tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          )
+        }
+        {
+          dateWithTags && (
+            <time class="post-card__date" datetime={pubDate.toISOString()}>
+              {formatDateYmd(pubDate)}
+            </time>
+          )
+        }
+      </div>
+    )
+  }
+</article>
+
+<style is:global>
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .post-card-wrap {
+    margin: 0;
+  }
+
+  .post-card {
+    display: block;
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px dashed color-mix(in oklab, var(--color-accent) 28%, var(--color-border));
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-list li:last-child .post-card {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .post-list--tips-cards {
+    margin-top: var(--space-md);
+  }
+
+  @media (min-width: 48rem) {
+    .post-list--tips-cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-lg);
+      row-gap: var(--space-xl);
+    }
+
+    .post-list--tips-cards .post-card {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  .post-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0.4rem 0 0;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .post-card__title {
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: 0.06em;
+    color: var(--color-text);
+  }
+
+  .post-card:hover .post-card__title,
+  .post-card:hover .post-card__meta,
+  .post-card--inline-date:hover .post-card__lead-date {
+    color: var(--color-accent);
+  }
+
+  .post-card__lead {
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: 0.06em;
+  }
+
+  .post-card--inline-date .post-card__title {
+    display: inline;
+    margin: 0;
+  }
+
+  .post-card--inline-date .post-card__lead-date {
+    display: inline;
+    margin-left: 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 48rem) {
+    .post-card--inline-date .post-card__title {
+      display: block;
+    }
+
+    .post-card--inline-date .post-card__lead-date {
+      display: block;
+      margin: 0.4rem 0 0;
+    }
+  }
+
+  .post-card__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .post-card__tags {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .post-card__date {
+    flex-shrink: 0;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+
+  .post-card__tag {
+    font-size: 0.88rem;
+    color: color-mix(in oklab, var(--color-muted) 78%, white);
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in oklab, var(--color-muted) 32%, transparent);
+  }
+
+  .post-card__tag:hover {
+    color: color-mix(in oklab, var(--color-accent) 52%, white);
+    border-bottom-color: color-mix(in oklab, var(--color-accent) 32%, transparent);
+  }
+</style>

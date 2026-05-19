@@ -1,0 +1,118 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import SiteAnalytics from '@/components/SiteAnalytics.astro';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  /** 記事詳細など */
+  ogType?: 'website' | 'article';
+  /** 例: 記事ページの目次サイドバー用レイアウト調整 */
+  mainClass?: string;
+  /** 記事詳細など: 横マーキーを出さない */
+  hideSiteMarquees?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  ogType = 'website',
+  mainClass,
+  hideSiteMarquees = false,
+} = Astro.props;
+const fullTitle = title.includes('体重100kg') ? title : `${title} | 体重100kgからサブ3を目指すブログ`;
+const desc =
+  description ??
+  'ダイエットとランニング初心者向け。Activities と減量・走り方のTipsを綴ります。';
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    {
+      ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={fullTitle} />
+          <meta name="twitter:description" content={desc} />
+          <meta name="twitter:image" content={ogImage} />
+        </>
+      )
+    }
+    <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}images/favicon.png`} />
+    <SiteAnalytics />
+  </head>
+  <body
+    class:list={[
+      'site-shell',
+      { 'site-body--no-marquees': hideSiteMarquees },
+    ]}
+  >
+    <Header hideSiteMarquees={hideSiteMarquees} />
+    <div class="site-middle">
+      <main class:list={['site-main', mainClass]}>
+        <slot />
+      </main>
+    </div>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .site-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .site-middle {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .site-main {
+    max-width: var(--site-max-width);
+    margin: 0 auto;
+    padding: var(--space-lg) var(--space-md) 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .site-main {
+      padding-inline-start: var(--space-sm);
+      padding-inline-end: var(--space-md);
+    }
+
+    :global(body.site-body--no-marquees) .site-main {
+      padding-inline: var(--space-md);
+    }
+  }
+</style>

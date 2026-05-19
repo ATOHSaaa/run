@@ -1,0 +1,191 @@
+---
+interface Props {
+  href: string;
+  /** リンク文言（例: Amazonで「…」を探す） */
+  label: string;
+  /** カード内の商品名。未指定時は label から推測しないで label を見出しに */
+  productName?: string;
+  /** `public/` からの相対パス */
+  imageSrc?: string;
+}
+
+const { href, label, productName, imageSrc } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const root = base.endsWith('/') ? base : `${base}/`;
+const thumbSrc = imageSrc ? `${root}${imageSrc.replace(/^\//, '')}` : `${root}gears/placeholder-1.svg`;
+const displayName = productName ?? label;
+---
+
+<a
+  class="amazon-affiliate-card"
+  href={href}
+  target="_blank"
+  rel="noopener noreferrer sponsored"
+>
+  <span class="amazon-affiliate-card__media" aria-hidden="true">
+    <img
+      class="amazon-affiliate-card__thumb"
+      src={thumbSrc}
+      alt=""
+      width="160"
+      height="160"
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="amazon-affiliate-card__badge">Amazon.co.jp</span>
+  </span>
+  <span class="amazon-affiliate-card__body">
+    <span class="amazon-affiliate-card__eyebrow">購入・在庫を確認</span>
+    <span class="amazon-affiliate-card__title">{displayName}</span>
+    <span class="amazon-affiliate-card__cta">
+      <span class="amazon-affiliate-card__cta-text">{label}</span>
+      <svg
+        class="amazon-affiliate-card__arrow"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M5 12h14m0 0-5-5m5 5-5 5"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </span>
+  </span>
+</a>
+
+<style is:global>
+  .amazon-affiliate-card {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 7.5rem) minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: stretch;
+    margin: var(--space-xl) 0 0;
+    padding: var(--space-md);
+    border: 2px solid var(--color-text);
+    border-radius: 0.85rem;
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+    text-decoration: none;
+    box-sizing: border-box;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .amazon-affiliate-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 10px 28px color-mix(in oklab, var(--color-accent) 18%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .amazon-affiliate-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .amazon-affiliate-card__media {
+    position: relative;
+    display: block;
+    min-height: 0;
+  }
+
+  .amazon-affiliate-card__thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 0.55rem;
+    border: 1px solid color-mix(in oklab, var(--color-text) 12%, transparent);
+    background: var(--color-bg);
+  }
+
+  .amazon-affiliate-card__badge {
+    position: absolute;
+    left: 0.35rem;
+    bottom: 0.35rem;
+    padding: 0.18rem 0.45rem;
+    border-radius: 0.35rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: #111;
+    background: #ff9900;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+  }
+
+  .amazon-affiliate-card__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .amazon-affiliate-card__eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .amazon-affiliate-card__title {
+    font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+  }
+
+  .amazon-affiliate-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1.4;
+  }
+
+  .amazon-affiliate-card__cta-text {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .amazon-affiliate-card:hover .amazon-affiliate-card__cta {
+    color: color-mix(in oklab, var(--color-accent) 78%, black);
+  }
+
+  .amazon-affiliate-card__arrow {
+    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .amazon-affiliate-card--inline {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .article__amazon-affiliates .amazon-affiliate-card {
+    margin-top: var(--space-md);
+  }
+
+  .article__amazon-affiliates .amazon-affiliate-card:not(:first-of-type) {
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 40rem) {
+    .amazon-affiliate-card {
+      grid-template-columns: minmax(7.5rem, 9rem) minmax(0, 1fr);
+      padding: var(--space-md) var(--space-lg);
+    }
+  }
+</style>

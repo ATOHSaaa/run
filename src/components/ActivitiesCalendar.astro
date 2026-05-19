@@ -1,0 +1,559 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { activityIconUrl, registeredActivities } from '@/constants/activity-icons';
+import { SHOW_ACTIVITIES_CALENDAR } from '@/config/features';
+import { getPostDisplayTitle } from '@/utils/post-title';
+import {
+  buildDiaryCalendarGrid,
+  enumerateDiaryMonthsUtc,
+  pickDiaryCalendarMonth,
+} from '@/utils/diary-calendar';
+import { calendarYmdPartsInTz, PROFILE_AGE_TIME_ZONE } from '@/utils/profile-age';
+
+const todayParts = calendarYmdPartsInTz(new Date(), PROFILE_AGE_TIME_ZONE);
+const todayDateKey = `${todayParts.y}-${String(todayParts.m).padStart(2, '0')}-${String(todayParts.d).padStart(2, '0')}`;
+
+interface Props {
+  activitiesPosts: CollectionEntry<'blog'>[];
+  base: string;
+  /** 初期表示の基準日（記事の pubDate など）。未指定時は pickDiaryCalendarMonth と同様 */
+  anchorDate?: Date;
+  /** DOM の id 接頭辞（同一ページに複数ある場合は必ず変える） */
+  rootId?: string;
+}
+
+const { activitiesPosts, base, anchorDate, rootId = 'activities-calendar-root' } = Astro.props;
+
+const diaryNavMonths = enumerateDiaryMonthsUtc(activitiesPosts);
+const defaultMonth = anchorDate
+  ? { year: anchorDate.getUTCFullYear(), monthIndex: anchorDate.getUTCMonth() }
+  : pickDiaryCalendarMonth(activitiesPosts);
+
+let activitiesCalInitialIndex = diaryNavMonths.findIndex(
+  (x) => x.year === defaultMonth.year && x.monthIndex === defaultMonth.monthIndex,
+);
+if (activitiesCalInitialIndex < 0) {
+  activitiesCalInitialIndex = diaryNavMonths.length > 0 ? diaryNavMonths.length - 1 : 0;
+}
+
+const diaryCalendarPanels = diaryNavMonths.map((m) => ({
+  year: m.year,
+  monthIndex: m.monthIndex,
+  label: `${m.year}年${m.monthIndex + 1}月`,
+  rows: buildDiaryCalendarGrid(m.year, m.monthIndex, activitiesPosts),
+}));
+
+const monthLabelId = `${rootId}-month-label`;
+const showCalendar = SHOW_ACTIVITIES_CALENDAR && diaryCalendarPanels.length > 0;
+
+/** シームレスループ用に同一セットを12回並べる（1周 = トラック幅の 1/12） */
+const LEGEND_LOOP_COPIES = 12;
+const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex) =>
+  registeredActivities.map((item) => ({
+    ...item,
+    duplicate: copyIndex > 0,
+  })),
+).flat();
+---
+
+{
+  showCalendar && (
+    <>
+    <div
+      id={rootId}
+      class="diary-calendar-wrap"
+      aria-label="Activities カレンダー"
+    >
+  <div class="activities-calendar__chrome">
+    <button
+      type="button"
+      class="activities-calendar__btn"
+      data-cal-prev
+      aria-label="前の月を表示"
+      hidden={activitiesCalInitialIndex < 1}
+    >
+      前月
+    </button>
+    <p class="activities-calendar__month-label" id={monthLabelId} aria-live="polite">
+      {diaryCalendarPanels[activitiesCalInitialIndex]?.label}
+    </p>
+    <button
+      type="button"
+      class="activities-calendar__btn"
+      data-cal-next
+      aria-label="次の月を表示"
+      hidden={activitiesCalInitialIndex >= diaryCalendarPanels.length - 1}
+    >
+      次月
+    </button>
+  </div>
+  {
+    diaryCalendarPanels.map((panel, i) => (
+      <div
+        class:list={['diary-calendar-panel', i !== activitiesCalInitialIndex && 'is-hidden']}
+        data-activities-panel
+        data-month-label={panel.label}
+        aria-hidden={i !== activitiesCalInitialIndex ? 'true' : 'false'}
+      >
+        <table class="diary-calendar">
+          <caption class="sr-only">{panel.label}の Activities</caption>
+          <thead>
+            <tr>
+              {(['月', '火', '水', '木', '金', '土', '日'] as const).map((w) => (
+                <th class="diary-calendar__weekday" scope="col">
+                  {w}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              panel.rows.map((row) => (
+                <tr>
+                  {row.map((cell) => {
+                    const isToday =
+                      cell.dateKey !== null && cell.dateKey === todayDateKey && cell.day !== null;
+                    return (
+                    <td
+                      class:list={[
+                        'diary-calendar__cell',
+                        {
+                          'diary-calendar__cell--pad': cell.day === null,
+                          'diary-calendar__cell--adjacent': cell.isAdjacentMonth,
+                          'diary-calendar__cell--has': cell.posts.length > 0,
+                          'diary-calendar__cell--today': isToday,
+                        },
+                      ]}
+                      data-date-key={cell.dateKey ?? undefined}
+                    >
+                      <div class="diary-calendar__cell-inner">
+                        {
+                          cell.day !== null && (
+                            <>
+                              <p class="diary-calendar__day-head">
+                                <span
+                                  class:list={[
+                                    'diary-calendar__day-num',
+                                    isToday && 'diary-calendar__day-num--today',
+                                  ]}
+                                >
+                                  {cell.day}
+                                </span>
+                              </p>
+                              {
+                                cell.posts.length > 0 && (
+                                  <ul class="diary-calendar__entries">
+                                    {cell.posts.map((post) => (
+                                      <li class="diary-calendar__entry">
+                                        <a
+                                          class="diary-calendar__link"
+                                          href={`${base}blog/${post.slug}/`}
+                                        >
+                                          {getPostDisplayTitle(post.data)}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )
+                              }
+                            </>
+                          )
+                        }
+                      </div>
+                    </td>
+                    );
+                  })}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    ))
+  }
+  <script is:inline define:vars={{ activitiesCalInitialIndex, calendarRootId: rootId, calendarLabelId: monthLabelId }}>
+    (function () {
+      const root = document.getElementById(calendarRootId);
+      if (!root) return;
+      const panels = Array.from(root.querySelectorAll('[data-activities-panel]'));
+      const label = document.getElementById(calendarLabelId);
+      const prev = root.querySelector('[data-cal-prev]');
+      const next = root.querySelector('[data-cal-next]');
+      let idx = typeof activitiesCalInitialIndex === 'number' ? activitiesCalInitialIndex : 0;
+
+      function sync() {
+        panels.forEach(function (el, j) {
+          if (j === idx) {
+            el.classList.remove('is-hidden');
+            el.removeAttribute('aria-hidden');
+          } else {
+            el.classList.add('is-hidden');
+            el.setAttribute('aria-hidden', 'true');
+          }
+        });
+        const current = panels[idx];
+        if (label && current) {
+          label.textContent = current.getAttribute('data-month-label') || '';
+        }
+        if (prev) {
+          if (idx <= 0) prev.setAttribute('hidden', '');
+          else prev.removeAttribute('hidden');
+        }
+        if (next) {
+          if (idx >= panels.length - 1) next.setAttribute('hidden', '');
+          else next.removeAttribute('hidden');
+        }
+      }
+
+      prev?.addEventListener('click', function () {
+        if (idx > 0) {
+          idx--;
+          sync();
+        }
+      });
+      next?.addEventListener('click', function () {
+        if (idx < panels.length - 1) {
+          idx++;
+          sync();
+        }
+      });
+      sync();
+    })();
+  </script>
+    </div>
+    <div class="activities-icon-legend" role="region" aria-label="記録している運動の種類">
+      <div class="activities-icon-legend__viewport">
+        <div class="activities-icon-legend__track">
+          {
+            legendIconItems.map(({ key, ariaLabel, duplicate }) => (
+              <span
+                class="activities-icon-legend__item"
+                aria-hidden={duplicate ? 'true' : undefined}
+              >
+                <img
+                  class="activities-icon-legend__img"
+                  src={activityIconUrl(base, key)}
+                  alt=""
+                  aria-label={duplicate ? undefined : ariaLabel}
+                  width="96"
+                  height="96"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+    </>
+  )
+}
+
+<style is:global>
+  @keyframes activities-icon-legend-marquee {
+    0% {
+      transform: translate3d(calc(-100% / 12), 0, 0);
+    }
+
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+</style>
+
+<style>
+  .diary-calendar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    width: 100%;
+  }
+
+  .diary-calendar-panel {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .activities-calendar__chrome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: var(--space-sm);
+    padding: 0.35rem var(--space-md);
+    border-radius: 0.65rem;
+    background: var(--color-accent);
+    border: 1px solid color-mix(in oklab, var(--color-accent) 70%, black);
+    box-sizing: border-box;
+  }
+
+  .activities-calendar__btn {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.4rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #000;
+    background: #fff;
+    border: 1px solid color-mix(in oklab, var(--color-border) 55%, white);
+    border-radius: 0.45rem;
+    cursor: pointer;
+  }
+
+  .activities-calendar__btn:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-border) 12%, white);
+    border-color: color-mix(in oklab, var(--color-text) 22%, var(--color-border));
+    color: #000;
+  }
+
+  .activities-calendar__btn:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+  }
+
+  .activities-calendar__btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  .activities-calendar__month-label {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+    font-size: clamp(1.15rem, 3.2vw, 1.45rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: center;
+    color: #fff;
+    line-height: 1.25;
+  }
+
+  .diary-calendar-panel.is-hidden {
+    display: none;
+  }
+
+  .diary-calendar__caption {
+    margin: 0 0 var(--space-md);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+  }
+
+  .diary-calendar {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.82rem;
+  }
+
+  .diary-calendar__weekday {
+    width: 14.2857%;
+    padding: 0.38rem 0.2rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    border-bottom: 2px solid #000;
+    text-align: center;
+    font-size: 0.78rem;
+    line-height: 1.25;
+  }
+
+  /* 土日列（月曜始まりで 6=土 7=日）: 土=青・日=赤 */
+  .diary-calendar__weekday:nth-child(6),
+  .diary-calendar__cell:nth-child(6) {
+    background: var(--color-accent-soft);
+  }
+
+  .diary-calendar__weekday:nth-child(7),
+  .diary-calendar__cell:nth-child(7) {
+    background: #fce8e6;
+  }
+
+  .diary-calendar__cell {
+    vertical-align: top;
+    border: 1px solid var(--color-border);
+    box-sizing: border-box;
+    width: 14.2857%;
+    padding: 0;
+    height: auto;
+    background: var(--color-bg);
+  }
+
+  .diary-calendar__cell--adjacent,
+  .diary-calendar__cell--adjacent:nth-child(6),
+  .diary-calendar__cell--adjacent:nth-child(7) {
+    background: #f0f0f0;
+  }
+
+  .diary-calendar__cell--adjacent .diary-calendar__day-num {
+    color: var(--color-muted);
+  }
+
+  .diary-calendar__cell--today,
+  .diary-calendar__cell--today:nth-child(6),
+  .diary-calendar__cell--today:nth-child(7) {
+    background: #e8f5e9;
+  }
+
+  .diary-calendar__cell--today.diary-calendar__cell--adjacent,
+  .diary-calendar__cell--today.diary-calendar__cell--adjacent:nth-child(6),
+  .diary-calendar__cell--today.diary-calendar__cell--adjacent:nth-child(7) {
+    background: color-mix(in oklab, #22c55e 10%, var(--color-bg));
+  }
+
+  .diary-calendar__day-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem 0.35rem;
+    margin: 0 0 0.28rem;
+  }
+
+  .diary-calendar tbody tr:first-child .diary-calendar__cell-inner {
+    padding-top: 1.2rem;
+  }
+
+  .diary-calendar__cell-inner {
+    box-sizing: border-box;
+    /* 日付行 + 本文リンク約3行分（0.74rem × 1.4 × 3 行程度） */
+    min-height: clamp(5.35rem, 14.5vw, 6.5rem);
+    padding: 0.35rem 0.22rem 0.28rem 0.38rem;
+    overflow: hidden;
+  }
+
+  .diary-calendar__day-num {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+
+  .diary-calendar__day-num.diary-calendar__day-num--today {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    min-height: 1.55rem;
+    padding: 0 0.15rem;
+    border-radius: 50%;
+    background: #15803d;
+    color: #fff;
+    line-height: 1;
+    box-sizing: border-box;
+  }
+
+  .diary-calendar__entries {
+    list-style: none;
+    margin: 0.28rem 0 0;
+    padding: 0;
+  }
+
+  /* 当日だけ日付が円バッジで背が高い。他の日は記録の上余白を多めにして行揃え */
+  .diary-calendar__cell:not(.diary-calendar__cell--today):not(.diary-calendar__cell--pad)
+    .diary-calendar__entries {
+    margin-top: 0.95rem;
+  }
+
+  .diary-calendar__entry {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 0.72em;
+  }
+
+  .diary-calendar__entry::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 0.74rem;
+    line-height: 1.4;
+    color: #000;
+  }
+
+  .diary-calendar__entry + .diary-calendar__entry {
+    margin-top: 0.22rem;
+  }
+
+  .diary-calendar__link {
+    font-size: 0.74rem;
+    line-height: 1.4;
+    color: #000;
+    text-decoration: underline;
+    text-decoration-color: #000;
+    text-underline-offset: 0.15em;
+    font-weight: 600;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    word-break: break-word;
+  }
+
+  .diary-calendar__link:hover {
+    color: #000;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  /* 親の max-width に関係なくビューポート全幅（wrap の外に配置し、50% は親・50vw は画面基準） */
+  .activities-icon-legend {
+    --activities-icon-legend-vp: 100vw;
+    --activities-icon-legend-vp: 100dvw;
+    box-sizing: border-box;
+    width: var(--activities-icon-legend-vp);
+    max-width: none;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-xl);
+    margin-left: calc(50% - var(--activities-icon-legend-vp) / 2);
+    margin-right: calc(50% - var(--activities-icon-legend-vp) / 2);
+  }
+
+  .activities-icon-legend__viewport {
+    overflow: hidden;
+    width: 100%;
+    padding-block: var(--space-xs);
+  }
+
+  .activities-icon-legend__track {
+    --activities-icon-legend-gap: var(--space-xl);
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--activities-icon-legend-gap);
+    flex-shrink: 0;
+    width: max-content;
+    min-width: max-content;
+    will-change: transform;
+    backface-visibility: hidden;
+    animation: activities-icon-legend-marquee 22s linear infinite;
+  }
+
+  .activities-icon-legend:hover .activities-icon-legend__track,
+  .activities-icon-legend:focus-within .activities-icon-legend__track {
+    animation-play-state: paused;
+  }
+
+  .activities-icon-legend__item {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .activities-icon-legend__img {
+    display: block;
+    width: clamp(4.25rem, 16vw, 6.25rem);
+    height: clamp(4.25rem, 16vw, 6.25rem);
+    object-fit: contain;
+    background: transparent;
+  }
+</style>

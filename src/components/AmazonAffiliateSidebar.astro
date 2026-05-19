@@ -1,0 +1,164 @@
+---
+import AmazonAffiliateSectionHeading from '@/components/AmazonAffiliateSectionHeading.astro';
+
+interface Item {
+  href: string;
+  label: string;
+  productName?: string;
+  imageSrc?: string;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const root = base.endsWith('/') ? base : `${base}/`;
+---
+
+<section class="amazon-affiliate-sidebar" aria-labelledby="amazon-affiliate-sidebar-heading">
+  <AmazonAffiliateSectionHeading id="amazon-affiliate-sidebar-heading" variant="sidebar" />
+  <ul class="amazon-affiliate-sidebar__list">
+    {
+      items.map((item) => {
+        const thumbSrc = item.imageSrc
+          ? `${root}${item.imageSrc.replace(/^\//, '')}`
+          : `${root}gears/placeholder-1.svg`;
+        const displayName = item.productName ?? item.label;
+
+        return (
+          <li class="amazon-affiliate-sidebar__item">
+            <a
+              class="amazon-affiliate-sidebar__link"
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+            >
+              <span class="amazon-affiliate-sidebar__thumb-wrap" aria-hidden="true">
+                <img
+                  class="amazon-affiliate-sidebar__thumb"
+                  src={thumbSrc}
+                  alt=""
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+              <span class="amazon-affiliate-sidebar__text">
+                <span class="amazon-affiliate-sidebar__name">{displayName}</span>
+                <span class="amazon-affiliate-sidebar__store" aria-hidden="true">
+                  <span class="amazon-affiliate-sidebar__store-amazon">Amazon</span>
+                  <span class="amazon-affiliate-sidebar__store-tld">.co.jp</span>
+                </span>
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</section>
+
+<style>
+  .amazon-affiliate-sidebar {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 2px solid color-mix(in oklab, var(--color-accent) 35%, transparent);
+    min-width: 0;
+  }
+
+  .amazon-affiliate-sidebar__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .amazon-affiliate-sidebar__link {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: 0.55rem;
+    align-items: center;
+    padding: 0.45rem;
+    border: 2px solid var(--color-text);
+    border-radius: 0.55rem;
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+    text-decoration: none;
+    box-sizing: border-box;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .amazon-affiliate-sidebar__link:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 6px 16px color-mix(in oklab, var(--color-accent) 14%, transparent);
+  }
+
+  .amazon-affiliate-sidebar__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .amazon-affiliate-sidebar__thumb-wrap {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 0.35rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklab, var(--color-text) 10%, transparent);
+    background: var(--color-bg);
+  }
+
+  .amazon-affiliate-sidebar__thumb {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .amazon-affiliate-sidebar__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .amazon-affiliate-sidebar__name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .amazon-affiliate-sidebar__store {
+    display: inline-flex;
+    align-items: baseline;
+    align-self: flex-start;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.35rem;
+    background: #ff9900;
+    color: #111;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+  }
+
+  .amazon-affiliate-sidebar__store-tld {
+    letter-spacing: 0.01em;
+  }
+
+  .amazon-affiliate-sidebar__link:hover .amazon-affiliate-sidebar__store {
+    background: #e88b00;
+  }
+</style>

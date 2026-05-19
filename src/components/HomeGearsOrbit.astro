@@ -1,0 +1,222 @@
+---
+/** Gears ブロック外周を回るアイコン（サブコピー行の高さ・カード下は背面で非表示） */
+
+interface Props {
+  base: string;
+}
+
+const { base } = Astro.props;
+
+const iconTypes = [
+  { file: 'apparel.png', label: 'Wear', labelVariant: 'wear', tag: 'ウェア' },
+  { file: 'gadgets.png', label: 'Gadget', labelVariant: 'gadget', tag: 'ガジェット' },
+  { file: 'footwear.png', label: 'Shoes', labelVariant: 'shoes', tag: 'シューズ' },
+] as const;
+
+const ROUNDS = 8;
+
+/** Wear → Gadget → Shoes を交互に並べる */
+const orbitSlots = Array.from({ length: ROUNDS }, (_, round) =>
+  iconTypes.map((icon) => ({
+    file: icon.file,
+    label: icon.label,
+    labelVariant: icon.labelVariant,
+    tag: icon.tag,
+    href: `${base}tags/${encodeURIComponent(icon.tag)}/`,
+    key: `${icon.file}-${round}`,
+  })),
+).flat();
+
+const orbitDurationSec = 48;
+const orbitStaggerSec = orbitDurationSec / orbitSlots.length;
+---
+
+<nav class="home-gears-orbit" aria-label="グッズカテゴリ">
+  <ul class="home-gears-orbit__list">
+    {
+      orbitSlots.map((slot, index) => (
+        <li
+          class="home-gears-orbit__slot"
+          style={{
+            '--orbit-delay': `${-index * orbitStaggerSec}s`,
+            '--orbit-duration': `${orbitDurationSec}s`,
+          }}
+        >
+          <a
+            class="home-gears-orbit__link"
+            href={slot.href}
+            aria-label={`${slot.label}（${slot.tag}）の記事一覧へ`}
+          >
+            <span class="home-gears-orbit__body">
+              <img
+                class:list={[
+                  'home-gears-orbit__img',
+                  index % 2 === 1 && 'home-gears-orbit__img--stagger',
+                ]}
+                src={`${base}images/gears-icons/${slot.file}`}
+                alt=""
+                width="160"
+                height="160"
+                loading="lazy"
+                decoding="async"
+              />
+              <span
+                class:list={[
+                  'home-gears-orbit__label',
+                  `home-gears-orbit__label--${slot.labelVariant}`,
+                ]}
+              >
+                {slot.label}
+              </span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style is:global>
+  @keyframes home-gears-orbit-run {
+    /* 上辺（サブコピー付近）の見出し右あたりから一周 */
+    from {
+      offset-distance: 6%;
+    }
+
+    to {
+      offset-distance: 106%;
+    }
+  }
+</style>
+
+<style>
+  .home-gears-orbit {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .home-gears-orbit__list {
+    position: absolute;
+    inset: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .home-gears-orbit:has(.home-gears-orbit__link:hover) .home-gears-orbit__slot,
+  .home-gears-orbit:has(.home-gears-orbit__link:focus-visible) .home-gears-orbit__slot {
+    animation-play-state: paused;
+  }
+
+  .home-gears-orbit__slot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
+    offset-path: inset(
+      var(--gears-orbit-head-y, 1.65rem)
+      var(--gears-orbit-edge, 1.65rem)
+      var(--gears-orbit-bottom, 0.35rem)
+      var(--gears-orbit-edge, 1.65rem)
+      round clamp(10px, 2.5vw, 20px)
+    );
+    offset-distance: 4%;
+    offset-rotate: 0deg;
+    offset-anchor: center;
+    animation: home-gears-orbit-run var(--orbit-duration, 48s) linear infinite;
+    animation-delay: var(--orbit-delay, 0s);
+    will-change: offset-distance;
+  }
+
+  /* 視覚効果を減らす ON でも回す（duration を消さないよう shorthand で指定） */
+  @media (prefers-reduced-motion: reduce) {
+    .home-gears-orbit__slot {
+      animation: home-gears-orbit-run var(--orbit-duration, 48s) linear infinite;
+      animation-delay: var(--orbit-delay, 0s);
+    }
+  }
+
+  .home-gears-orbit__link {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: block;
+    width: clamp(2.85rem, 10vw, 4.15rem);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.5rem;
+  }
+
+  .home-gears-orbit__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    width: 100%;
+    transform-origin: bottom center;
+    transition: transform 0.2s ease;
+  }
+
+  .home-gears-orbit__link:hover .home-gears-orbit__body,
+  .home-gears-orbit__link:focus-visible .home-gears-orbit__body {
+    transform: scale(1.1);
+  }
+
+  .home-gears-orbit__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .home-gears-orbit__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-gears-orbit__body {
+      transition: none;
+    }
+  }
+
+  .home-gears-orbit__img--stagger {
+    margin-top: 0.45rem;
+  }
+
+  .home-gears-orbit__label {
+    display: block;
+    min-width: 3.5rem;
+    box-sizing: border-box;
+    padding: 0.22rem 0.5rem;
+    border: none;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    color: var(--color-text);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .home-gears-orbit__label--wear {
+    background: color-mix(in oklab, var(--color-accent) 18%, white);
+  }
+
+  .home-gears-orbit__label--gadget {
+    background: color-mix(in oklab, #f59e0b 22%, white);
+  }
+
+  .home-gears-orbit__label--shoes {
+    background: color-mix(in oklab, #22c55e 20%, white);
+  }
+</style>

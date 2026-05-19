@@ -1,0 +1,705 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaveDivider from '@/components/WaveDivider.astro';
+import ActivitiesCalendar from '@/components/ActivitiesCalendar.astro';
+import HomeProfile from '@/components/HomeProfile.astro';
+import HomeBlockHeadScrollReveal from '@/components/HomeBlockHeadScrollReveal.astro';
+import HomeGearsOrbit from '@/components/HomeGearsOrbit.astro';
+import PostCard from '@/components/PostCard.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { SHOW_ACTIVITIES_CALENDAR, SHOW_PRACTICE_DIARY } from '@/config/features';
+import { formatDateYmd } from '@/utils/date';
+import { getGearDisplayName, getPostDisplayTitle } from '@/utils/post-title';
+import { getBlogCategoryListHref } from '@/utils/blog-category-path';
+import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
+import { splitGearCardTitle } from '@/utils/gear-card-title';
+import { getGearTypeFromTags } from '@/utils/gear-type';
+import { resolveGearCoverImageUrl } from '@/utils/resolve-gear-cover-image';
+import { prefetchAmazonProductImages } from '../../amazon-creators-products.mjs';
+
+const posts = sortBlogPostsByPubDateDesc(await getCollection('blog'));
+
+const tipsPosts = posts.filter((p) => p.data.category === 'Tips').slice(0, 6);
+const allGearsPosts = posts.filter((p) => p.data.category === 'Gears');
+const gearsPosts = allGearsPosts.slice(0, 12);
+const allDiaryPosts = posts.filter((p) => p.data.category === 'Activities');
+const diaryPosts = allDiaryPosts.slice(0, 10);
+
+const base = import.meta.env.BASE_URL;
+
+const gearsPlaceholderFiles = [
+  'placeholder-1.svg',
+  'placeholder-2.svg',
+  'placeholder-3.svg',
+  'placeholder-4.svg',
+] as const;
+
+await prefetchAmazonProductImages(allGearsPosts);
+
+const gearsCoverUrls = await Promise.all(
+  gearsPosts.map((post, index) =>
+    resolveGearCoverImageUrl(
+      post,
+      base,
+      `${base}gears/${gearsPlaceholderFiles[index % gearsPlaceholderFiles.length]}`,
+    ),
+  ),
+);
+
+const homeDescription = SHOW_PRACTICE_DIARY
+  ? 'ダイエットとランニング初心者向け。Activities と減量・走り方のTipsを届けます。'
+  : 'ダイエットとランニング初心者向け。Activities、減量・走り方のTips、お気に入りのもの（Gears）を届けます。';
+
+---
+
+<BaseLayout title="体重100kgからサブ3を目指すブログ" description={homeDescription}>
+  <h1 class="sr-only">体重100kgからサブ3を目指すブログ</h1>
+
+  <div class="home-sections">
+    <section
+      class="home-block home-block--tips"
+      aria-labelledby="heading-tips"
+      aria-describedby="tips-subtitle"
+    >
+      <div class="home-block__head home-block__head--scroll-reveal">
+        <h2 id="heading-tips" class="home-block__title">
+          <a href={getBlogCategoryListHref(base, 'Tips')}>Tips</a>
+        </h2>
+        <p id="tips-subtitle" class="home-block__tagline">減量とランニングのコツ</p>
+      </div>
+      {
+        tipsPosts.length ? (
+          <ul class="post-list post-list--tips-cards">
+            {tipsPosts.map((post) => (
+              <li>
+                <PostCard
+                  href={`${base}blog/${post.slug}/`}
+                  title={getPostDisplayTitle(post.data)}
+                  pubDate={post.data.pubDate}
+                  headingLevel="h3"
+                  inlineTitleDate
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="home-block__empty">まだ記事がありません。</p>
+        )
+      }
+      {
+        tipsPosts.length > 0 && (
+          <p class="home-block__more">
+            <a
+              class="home-block__more-link"
+              href={getBlogCategoryListHref(base, 'Tips')}
+              aria-label="Tips の記事をもっと見る（Tips 一覧へ）"
+            >
+              <span>and more</span>
+              <svg
+                class="home-block__more-arrow"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 12h14m0 0-5-5m5 5-5 5"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          </p>
+        )
+      }
+    </section>
+
+    <WaveDivider variant="squiggle" />
+
+    <section
+      class="home-block home-block--gears"
+      aria-labelledby="heading-gears"
+      aria-describedby="gears-subtitle"
+    >
+      <div class="home-block--gears__inner">
+        <HomeGearsOrbit base={base} />
+        <div class="home-block__head home-block--gears__head home-block__head--scroll-reveal">
+          <div class="home-block--gears__head-mask">
+            <h2 id="heading-gears" class="home-block__title">
+              <a href={getBlogCategoryListHref(base, 'Gears')}>Gears</a>
+            </h2>
+            <p id="gears-subtitle" class="home-block__tagline">お気に入りのもの</p>
+          </div>
+        </div>
+        <div class="home-block--gears__body">
+          <div class="home-block--gears__surface">
+        {
+          gearsPosts.length ? (
+          <ul class="gears-grid">
+            {gearsPosts.map((post, i) => {
+              const gearLabel = getGearDisplayName(post.data);
+              const gearTitleLines = splitGearCardTitle(gearLabel, post.data.tags);
+              const gearType = getGearTypeFromTags(post.data.tags);
+              return (
+              <li>
+                <a class="gears-card" href={`${base}blog/${post.slug}/`}>
+                  <span class="gears-card__inner">
+                    <img
+                      class="gears-card__thumb"
+                      src={gearsCoverUrls[i]}
+                      alt={gearLabel}
+                      width="400"
+                      height="400"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="gears-card__label">
+                      {gearTitleLines.brand}
+                      {gearTitleLines.product && (
+                        <>
+                          <br />
+                          {gearTitleLines.product}
+                        </>
+                      )}
+                    </span>
+                    {
+                      gearType && (
+                        <span
+                          class:list={[
+                            'gears-card__type',
+                            `gears-card__type--${gearType.variant}`,
+                          ]}
+                        >
+                          {gearType.label}
+                        </span>
+                      )
+                    }
+                  </span>
+                </a>
+              </li>
+              );
+            })}
+          </ul>
+          ) : (
+            <p class="home-block__empty">まだ記事がありません。</p>
+          )
+        }
+        {
+          gearsPosts.length > 0 && (
+            <p class="home-block__more">
+              <a
+                class="home-block__more-link"
+                href={getBlogCategoryListHref(base, 'Gears')}
+                aria-label="Gears の記事をもっと見る（Gears 一覧へ）"
+              >
+                <span>and more</span>
+                <svg
+                  class="home-block__more-arrow"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12h14m0 0-5-5m5 5-5 5"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
+            </p>
+          )
+        }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <WaveDivider variant="squiggle" />
+
+    <section
+      class="home-block home-block--diary"
+      aria-labelledby="heading-diary"
+      aria-describedby="diary-subtitle"
+    >
+      <div class="home-block__head home-block__head--scroll-reveal">
+        <h2 id="heading-diary" class="home-block__title">
+          <a href={getBlogCategoryListHref(base, 'Activities')}>Activities</a>
+        </h2>
+        {
+          SHOW_ACTIVITIES_CALENDAR ? (
+            <p id="diary-subtitle" class="home-block__tagline">
+              日々の活動記録
+            </p>
+          ) : (
+            <p id="diary-subtitle" class="home-block__tagline">
+              日々の活動記録
+            </p>
+          )
+        }
+      </div>
+
+      {SHOW_ACTIVITIES_CALENDAR && <ActivitiesCalendar activitiesPosts={allDiaryPosts} base={base} />}
+
+      {
+        !SHOW_ACTIVITIES_CALENDAR &&
+          (diaryPosts.length ? (
+            <ol class="activities-timeline" aria-label="日々の活動記録（新しい順）">
+              {diaryPosts.map((post) => (
+                <li class="activities-timeline__item">
+                  <article class="activities-timeline__article">
+                    <h3 class="activities-timeline__title">
+                      <a href={`${base}blog/${post.slug}/`}>
+                        {getPostDisplayTitle(post.data)}
+                      </a>
+                      <time
+                        class="activities-timeline__date"
+                        datetime={post.data.pubDate.toISOString()}
+                      >
+                        {formatDateYmd(post.data.pubDate)}
+                      </time>
+                    </h3>
+                  </article>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="home-block__empty">まだ記事がありません。</p>
+          ))
+      }
+    </section>
+
+    <HomeProfile />
+
+    <HomeBlockHeadScrollReveal />
+  </div>
+</BaseLayout>
+
+<style>
+  .home-sections {
+    margin-top: 0;
+  }
+
+  .home-block {
+    padding-block: var(--space-xs);
+  }
+
+  .home-sections > .home-block:first-child {
+    padding-top: 0;
+    margin-top: calc(-1 * var(--space-md));
+  }
+
+  .home-sections > .home-block--tips:first-child {
+    margin-top: calc(-1 * var(--space-md) + var(--space-sm));
+  }
+
+  .home-block__head {
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+  }
+
+  .home-block__tagline {
+    margin: -20px 0 24px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .home-block--tips .home-block__head,
+  .home-block--gears .home-block__head,
+  .home-block--diary .home-block__head {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: baseline;
+    column-gap: var(--space-sm);
+    row-gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+    padding-bottom: 0;
+  }
+
+  .home-block--tips .home-block__title,
+  .home-block--gears .home-block__title,
+  .home-block--diary .home-block__title {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: clamp(2.75rem, 6.5vw, 4rem);
+    letter-spacing: 0.04em;
+    line-height: 1.04;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .home-block--tips .home-block__title a,
+  .home-block--gears .home-block__title a,
+  .home-block--diary .home-block__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .home-block--tips .home-block__title a:hover,
+  .home-block--gears .home-block__title a:hover,
+  .home-block--diary .home-block__title a:hover {
+    color: var(--color-accent);
+  }
+
+  .home-block--gears__head .home-block__title a {
+    pointer-events: auto;
+  }
+
+  .home-block--tips .home-block__tagline,
+  .home-block--gears .home-block__tagline,
+  .home-block--diary .home-block__tagline {
+    margin: 0;
+    text-align: left;
+    max-width: min(18rem, 100%);
+  }
+
+  .home-block--gears {
+    position: relative;
+    isolation: isolate;
+    /* 上辺＝サブコピー付近。edge=ルート（外側）、gutter=カード列の内側余白 */
+    --gears-orbit-head-y: clamp(1.65rem, 4.2vw, 2.55rem);
+    --gears-orbit-edge: clamp(1.65rem, 5.2vw, 3.1rem);
+    --gears-orbit-gutter: clamp(5.5rem, 18vw, 8.5rem);
+    --gears-orbit-bottom: clamp(0.3rem, 0.9vw, 0.55rem);
+    padding-block: clamp(0.75rem, 2vw, 1.25rem) clamp(3rem, 9vw, 4.75rem);
+    padding-inline: clamp(0.15rem, 1.5vw, 0.5rem);
+  }
+
+  .home-block--gears__inner {
+    position: relative;
+    padding-bottom: clamp(2.75rem, 8.5vw, 4.25rem);
+  }
+
+  .home-block--gears .home-block__head {
+    margin-bottom: var(--space-md);
+  }
+
+  .home-block--gears__head {
+    position: relative;
+    z-index: 3;
+    /* 見出し行の背面を通してオービットアイコンにホバーできるようにする */
+    pointer-events: none;
+  }
+
+  .home-block--gears__head-mask {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    column-gap: var(--space-sm);
+    flex: 0 1 auto;
+    max-width: 100%;
+    margin-left: clamp(-2rem, -1.5vw, -0.85rem);
+    padding: clamp(0.5rem, 1.8vw, 0.85rem) clamp(1rem, 2.8vw, 1.35rem)
+      clamp(1.65rem, 5.2vw, 2.35rem) clamp(1.25rem, 4vw, 2.1rem);
+    background: var(--color-bg);
+  }
+
+  .home-block--gears__body {
+    margin-inline: var(--gears-orbit-gutter);
+  }
+
+  .home-block--gears__surface {
+    position: relative;
+    z-index: 4;
+    padding-top: 0.25rem;
+    background: var(--color-bg);
+  }
+
+  .home-block--gears .gears-grid {
+    margin-top: 0;
+  }
+
+  .gears-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-lg);
+    column-gap: var(--space-md);
+  }
+
+  .gears-grid > li {
+    overflow: visible;
+  }
+
+  @media (min-width: 48rem) {
+    .gears-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      row-gap: var(--space-xl);
+      column-gap: var(--space-lg);
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .gears-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      row-gap: var(--space-xl);
+      column-gap: var(--space-lg);
+    }
+  }
+
+  .gears-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .gears-card__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    transform-origin: center center;
+    transition: transform 0.22s ease;
+  }
+
+  /* 視差・オービットは prefers-reduced-motion でも動く。カードのホバー拡大も同様 */
+  .gears-card:hover .gears-card__inner,
+  .gears-card:focus-visible .gears-card__inner {
+    transform: scale(1.05);
+  }
+
+  .gears-card__thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    height: auto;
+    object-fit: cover;
+    vertical-align: middle;
+    border-radius: 0.65rem;
+    border: 2px solid var(--color-text);
+    box-sizing: border-box;
+  }
+
+  .gears-card__label {
+    margin: var(--space-sm) 0 0;
+    width: 100%;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: var(--color-text);
+    line-height: 1.35;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .gears-card__type {
+    margin: 0.35rem auto 0;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    color: var(--color-text);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .gears-card__type--wear {
+    background: color-mix(in oklab, var(--color-accent) 18%, white);
+  }
+
+  .gears-card__type--gadget {
+    background: color-mix(in oklab, #f59e0b 22%, white);
+  }
+
+  .gears-card__type--shoes {
+    background: color-mix(in oklab, #22c55e 20%, white);
+  }
+
+  .home-block__title {
+    margin: 0;
+    color: var(--color-text);
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  .home-block__empty {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+  }
+
+  .home-block__more {
+    margin: var(--space-lg) 0 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .home-block--gears .home-block__more {
+    margin-top: var(--space-xl);
+    margin-bottom: clamp(1.25rem, 4.5vw, 2.25rem);
+    position: relative;
+    z-index: 3;
+    padding-inline: 0.15em;
+    background: var(--color-bg);
+  }
+
+  /* スマホ: オービットがはみ出さないよう白背景と軌道 inset を上下に広げる */
+  @media (max-width: 47.9375rem) {
+    .home-block--gears {
+      --gears-orbit-head-y: clamp(2.85rem, 12vw, 3.25rem);
+      --gears-orbit-bottom: 0;
+      padding-block: clamp(1.25rem, 4.5vw, 1.25rem) clamp(2.75rem, 9vw, 3.65rem);
+    }
+
+    .home-block--gears .home-gears-orbit {
+      inset: 0 0 clamp(-2.5rem, -9vw, -1.65rem) 0;
+    }
+
+    .home-block--gears__inner {
+      padding-bottom: clamp(2rem, 6.5vw, 2.85rem);
+    }
+
+    .home-block--gears .home-block__head {
+      margin-bottom: var(--space-xs);
+    }
+
+    .gears-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-block--gears__head-mask {
+      padding: clamp(1.35rem, 5.5vw, 1.75rem) clamp(1rem, 3.2vw, 1.35rem)
+        clamp(1.45rem, 5vw, 1.8rem) clamp(1.25rem, 4vw, 2.1rem);
+    }
+
+    .home-block--gears__surface {
+      padding-block: clamp(0.35rem, 1.5vw, 0.55rem) clamp(0.25rem, 1vw, 0.45rem);
+    }
+
+    .home-block--gears .home-block__more {
+      margin-top: var(--space-lg);
+      margin-bottom: clamp(0.35rem, 1.5vw, 0.65rem);
+      padding-block: 0.15rem;
+    }
+  }
+
+  .home-block__more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 0.16em;
+    box-sizing: border-box;
+  }
+
+  .home-block__more-link:hover {
+    color: var(--color-accent);
+  }
+
+  .home-block__more-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+    opacity: 1;
+  }
+
+  .home-block__more-arrow {
+    flex-shrink: 0;
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: 0.06em;
+  }
+
+  .activities-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0 0 1.45rem;
+    position: relative;
+  }
+
+  .activities-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.42rem;
+    top: 0.55rem;
+    bottom: 0.45rem;
+    width: 2px;
+    border-radius: 1px;
+    background: color-mix(in oklab, var(--color-accent) 34%, var(--color-border));
+  }
+
+  .activities-timeline__item {
+    position: relative;
+    margin: 0 0 var(--space-lg);
+    padding-left: 0.35rem;
+  }
+
+  .activities-timeline__item:last-child {
+    margin-bottom: 0;
+  }
+
+  .activities-timeline__item::before {
+    content: '';
+    position: absolute;
+    left: -1.02rem;
+    top: 0.32rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg);
+    box-sizing: border-box;
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+
+  .activities-timeline__article {
+    margin: 0;
+    padding: 0.12rem 0 0;
+  }
+
+  .activities-timeline__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem var(--space-sm);
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.38;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .activities-timeline__title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .activities-timeline__title a:hover {
+    color: var(--color-accent);
+  }
+
+  .activities-timeline__date {
+    flex-shrink: 0;
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+</style>
