@@ -13,6 +13,7 @@ import {
   getNodePlainText,
   hrefString,
 } from './amazon-affiliate-card-hast.mjs';
+import { findLocalProductImageSrcSync } from './amazon-creators-products.mjs';
 
 function loadProductCache() {
   try {
@@ -100,6 +101,8 @@ export default function rehypeAmazonInlineAffiliateCards() {
 
         const asin = extractAsinFromAmazonUrl(link.href);
         const cached = asin ? productCache[asin] : undefined;
+        const imageSrc =
+          cached?.imageSrc ?? (asin ? findLocalProductImageSrcSync(asin) : undefined);
         const productName = cached?.title ?? link.linkText ?? asin ?? 'Amazon';
         const linkLabel =
           link.linkText && !/^amazon(\.co\.jp)?$/i.test(link.linkText)
@@ -112,7 +115,7 @@ export default function rehypeAmazonInlineAffiliateCards() {
             href: toAmazonAffiliateUrl(link.href, associateTag),
             productName,
             label,
-            imageSrc: cached?.imageSrc,
+            imageSrc,
             baseUrl,
             inline: true,
           }),

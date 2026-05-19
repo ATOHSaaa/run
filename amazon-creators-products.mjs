@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { loadEnv } from 'vite';
 import { ApiClient, DefaultApi, GetItemsRequestContent } from 'amazon-creator-api-sdk';
@@ -94,6 +95,29 @@ async function productImageFileExists(imageSrc) {
   } catch {
     return false;
   }
+}
+
+const PRODUCT_IMAGE_EXTENSIONS = ['jpg', 'png', 'webp'];
+
+/**
+ * `public/gears/amazon/{ASIN}.{ext}` があればその相対パスを返す（キャッシュ不要）。
+ * @param {string} asin
+ * @returns {Promise<string | undefined>}
+ */
+export function findLocalProductImageSrcSync(asin) {
+  const normalized = asin.trim().toUpperCase();
+  for (const ext of PRODUCT_IMAGE_EXTENSIONS) {
+    const relPath = `gears/amazon/${normalized}.${ext}`;
+    if (fsSync.existsSync(path.join('public', relPath))) {
+      return relPath;
+    }
+  }
+  return undefined;
+}
+
+/** @param {string} asin */
+export async function findLocalProductImageSrc(asin) {
+  return findLocalProductImageSrcSync(asin);
 }
 
 /**
@@ -271,6 +295,14 @@ export async function prefetchAmazonProductAsins(asins) {
   const needsApi = [];
 
   for (const asin of unique) {
+    const local = await findLocalProductImageSrc(asin);
+    if (local) {
+      const entry = cache[asin] ?? {};
+      entry.imageSrc = local;
+      cache[asin] = entry;
+      continue;
+    }
+
     const entry = cache[asin];
     if (!entry) {
       needsApi.push(asin);
@@ -304,6 +336,10 @@ export async function prefetchAmazonProductImages(posts) {
  */
 export async function getAmazonProductImageSrc(asin) {
   const normalized = asin.trim().toUpperCase();
+
+  const local = await findLocalProductImageSrc(normalized);
+  if (local) return local;
+
   const cache = await getCache();
   const entry = cache[normalized];
   if (!entry) return undefined;

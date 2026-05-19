@@ -29,6 +29,11 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://run.atohs.me
           PUBLIC_BASE_PATH: /
+          AMAZON_ASSOCIATE_TAG: ${{ secrets.AMAZON_ASSOCIATE_TAG }}
+          AMAZON_CREATORS_CREDENTIAL_ID: ${{ secrets.AMAZON_CREATORS_CREDENTIAL_ID }}
+          AMAZON_CREATORS_CREDENTIAL_SECRET: ${{ secrets.AMAZON_CREATORS_CREDENTIAL_SECRET }}
+          AMAZON_CREATORS_VERSION: ${{ secrets.AMAZON_CREATORS_VERSION }}
+          AMAZON_MARKETPLACE: ${{ secrets.AMAZON_MARKETPLACE }}
         run: npm run build
       - name: Upload
         uses: actions/upload-pages-artifact@v3

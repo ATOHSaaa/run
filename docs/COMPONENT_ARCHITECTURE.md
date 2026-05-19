@@ -182,7 +182,9 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 
 変換例: `https://www.amazon.co.jp/dp/B0XXXXXX/...` → `https://amazon.co.jp/dp/B0XXXXXX?tag=run-atohs-22`（`/dp/{ASIN}` と `tag` のみ）
 
-**商品画像（Creators API）**: ビルド時に `amazon-creators-products.mjs` が `getItems` で `images.primary.medium` を取得し、`public/gears/amazon/{ASIN}.jpg` に保存。キャッシュは `.cache/amazon-product-images.json`。`amazonAffiliate` の `href` から ASIN を抽出（または `asin` を明示）。手動の `imageSrc` があれば API より優先。
+**商品画像（Creators API）**: ビルド時に `amazon-creators-products.mjs` が `getItems` で `images.primary.medium` を取得し、`public/gears/amazon/{ASIN}.jpg` に保存。キャッシュは `.cache/amazon-product-images.json`（git 管理外）。`amazonAffiliate` の `href` から ASIN を抽出（または `asin` を明示）。手動の `imageSrc` があれば API より優先。
+
+**本番（GitHub Actions）**: `public/gears/amazon/{ASIN}.jpg` をリポジトリにコミットしておけば、`.cache` が無くてもビルド時にそのパスを参照する（CI で API 未設定でも表示可能）。新規 ASIN を API で取る場合は、リポジトリの **Settings → Secrets and variables → Actions** に `AMAZON_CREATORS_CREDENTIAL_ID` / `AMAZON_CREATORS_CREDENTIAL_SECRET`（任意で `AMAZON_CREATORS_VERSION`・`AMAZON_MARKETPLACE`）を登録し、`.github/workflows/deploy.yml` の Build ステップで渡す。取得後は `public/gears/amazon/` をコミットしておくと API なしのビルドでも安定する。
 
 ---
 
