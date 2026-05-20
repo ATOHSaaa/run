@@ -14,7 +14,7 @@ export async function generateBlogOgPng(
   const headerHeight = headerMeta.height;
   if (!headerHeight || headerHeight >= OG_HEIGHT) {
     throw new Error(
-      `OGP ヘッダー画像の高さが不正です (${headerHeight ?? 'unknown'}px)。capture:og-header を再実行してください。`,
+      `OGP ヘッダー画像の高さが不正です (${headerHeight ?? 'unknown'}px)。src/assets/og/site-header-strip.png を /og/header-strip/ から撮り直してください。`,
     );
   }
 

@@ -31,6 +31,3 @@ note-export/
 # image tooling (local venv / rembg model cache)
 .venv-img/
 .cache/
-
-# 紹介用動画（npm run capture:home-promo で生成）
-promo/

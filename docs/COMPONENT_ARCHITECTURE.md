@@ -348,12 +348,8 @@ import photo from '@/assets/images/activities/example.jpg';
 
 ビルド時に 1200×630 PNG を生成する。
 
-- **青帯（ブログ名）**: サイトヘッダーと同じ `SiteHeaderBrand` を `/og/header-strip/` に表示し、`npm run capture:og-header`（Puppeteer）で `.cache/og-site-header-strip.png` に保存。記事 OGP はこれを `sharp` で上部に合成する。
+- **青帯（ブログ名）**: `src/assets/og/site-header-strip.png`（コミット済み）を `sharp` で記事 OGP 上部に合成。`SiteHeaderBrand` の見た目を変えたときは `/og/header-strip/`（1200px 幅）をブラウザで撮り直し、同 PNG をコミットする。
 - **本文（カテゴリ・タグ・記事タイトル等）**: `satori` + `sharp`。フォントは `fonts.ts` で埋め込み（YakuHan は woff2 を `wawoff2` で TTF に展開）。
-
-`npm run build` は先に `capture:og-header` を実行する（Puppeteer 同梱の Chromium で `/og/header-strip/` を撮影）。ローカルで OGP だけ試すときも、初回は `npm run capture:og-header` が必要。
-
-GitHub Actions（`.github/workflows/deploy.yml`）では `sudo npx puppeteer browsers install chrome --install-deps` で Linux 向けシステム依存を入れ、`scripts/puppeteer-launch.mjs` が `CI` 時に `--no-sandbox` 等を付与する。
 
 | ルート | 用途 |
 |--------|------|
