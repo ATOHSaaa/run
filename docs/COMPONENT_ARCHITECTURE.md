@@ -353,7 +353,7 @@ import photo from '@/assets/images/activities/example.jpg';
 
 `npm run build` は先に `capture:og-header` を実行する（Puppeteer 同梱の Chromium で `/og/header-strip/` を撮影）。ローカルで OGP だけ試すときも、初回は `npm run capture:og-header` が必要。
 
-GitHub Actions（`.github/workflows/deploy.yml`）では `npx puppeteer browsers install chrome --install-deps` で Linux 向けシステム依存を入れ、`scripts/puppeteer-launch.mjs` が `CI` 時に `--no-sandbox` 等を付与する。
+GitHub Actions（`.github/workflows/deploy.yml`）では `sudo npx puppeteer browsers install chrome --install-deps` で Linux 向けシステム依存を入れ、`scripts/puppeteer-launch.mjs` が `CI` 時に `--no-sandbox` 等を付与する。
 
 | ルート | 用途 |
 |--------|------|

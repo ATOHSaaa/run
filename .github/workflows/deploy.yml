@@ -26,7 +26,7 @@ jobs:
       - name: Install
         run: npm ci
       - name: Install Chrome system dependencies (Puppeteer)
-        run: npx puppeteer browsers install chrome --install-deps
+        run: sudo npx puppeteer browsers install chrome --install-deps
       - name: Build
         env:
           PUBLIC_SITE_URL: https://run.atohs.me
