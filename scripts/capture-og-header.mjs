@@ -7,6 +7,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { puppeteerLaunchOptions } from './puppeteer-launch.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4322;
@@ -46,7 +47,7 @@ async function main() {
 
   try {
     await waitForServer(captureUrl);
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch(puppeteerLaunchOptions);
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 320, deviceScaleFactor: 1 });
     await page.goto(captureUrl, { waitUntil: 'networkidle0', timeout: 60_000 });

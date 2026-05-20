@@ -11,6 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { puppeteerLaunchOptions } from './puppeteer-launch.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4323;
@@ -139,7 +140,7 @@ async function main() {
   try {
     await waitForServer(homeUrl);
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch(puppeteerLaunchOptions);
     const page = await browser.newPage();
     await page.setViewport({ ...VIEWPORT, deviceScaleFactor: 1 });
     await page.goto(homeUrl, { waitUntil: 'networkidle0', timeout: 120_000 });
