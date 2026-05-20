@@ -93,6 +93,7 @@ Tips / Gears / Activities ブロック:
 - **見出し・pre**: `text-align: start`（両端揃えの対象外）
 - **記事内写真**: `ArticleFigure` + `src/assets/`（WebP・responsive、`astro:assets`）。`.article-figure` に左右 `clamp(2rem, 6vw, 3.25rem)`、下 `48px`（直前段落の `margin-bottom` と同量）、画像に **3px** 黒枠・`border-radius: 0.4rem`。縦長（高さ＞幅）は `.article-figure--portrait` で最大 **20rem**・中央寄せ（`ArticleFigure` が `ImageMetadata` から自動判定）
 - **写真キャプション（`.article-figure__caption`）**: 画像下 `var(--space-md)`、中央揃え、`0.875rem`、`font-weight: 700`
+- **引用（`blockquote`）**: Markdown の `>`。`[...slug].astro` の `.article__main` — **2px** 黒枠・左 **4px** アクセント・`--color-accent-soft` 背景・`border-radius: 0.4rem`・`text-align: start`（両端揃えの対象外）。静的ページは `.static-prose blockquote`（`global.css`）で同様
 - **静的ページ（about / profile / privacy / contact / 404 本文）**: `global.css` の `.static-prose` — 本文色 `--color-text`、段落は両端揃え
 
 ### 3.5 練習ログ（Activities 記事上部）
