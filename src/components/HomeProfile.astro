@@ -266,6 +266,12 @@ function profileDistanceTimeHeading(distanceLabel: string): string {
     border-bottom: 2px solid color-mix(in oklab, black 12%, var(--color-accent));
   }
 
+  @media (max-width: 47.9375rem) {
+    .home-block.home-block--profile {
+      padding-top: calc(var(--space-lg) + var(--space-md));
+    }
+  }
+
   @media (min-width: 48rem) {
     .home-block.home-block--profile {
       margin-left: calc(-1 * (var(--_side-gutter) + var(--space-sm)));

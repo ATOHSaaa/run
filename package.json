@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "capture:og-header": "node scripts/capture-og-header.mjs",
+    "capture:home-promo": "node scripts/capture-home-promo-video.mjs",
+    "build": "npm run capture:og-header && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -13,7 +15,8 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^3.1.9",
     "@astrojs/sitemap": "3.1.6",
-    "@fontsource/noto-sans-jp": "^5.2.9",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/zen-kaku-gothic-new": "^5.2.7",
     "amazon-creator-api-sdk": "^1.2.0",
     "astro": "^4.16.0",
     "github-slugger": "^2.0.0",
@@ -22,6 +25,10 @@
     "sharp": "^0.34.5",
     "typescript": "^5.6.3",
     "unist-util-visit": "^5.1.0",
+    "wawoff2": "^2.0.1",
     "yakuhanjp": "^4.1.1"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.8.2"
   }
 }

@@ -155,7 +155,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 
 ### `AmazonAffiliateSidebar.astro`
 
-デスクトップ右サイドバー用のコンパクトな商品一覧（見出し「この記事に出てくる商品」）。`amazonAffiliate` と同じデータ・画像を使用。目次の下に表示（`min-width: 62rem`）。
+デスクトップ右サイドバー用のコンパクトな商品一覧（見出し「この記事に出てくる商品」）。`amazonAffiliate` フロントマターに加え、本文中の Amazon 商品 URL（`/dp/{ASIN}`）も `resolvePostAmazonAffiliateItems` で重複なくマージする。画像は Creators API キャッシュと同じ。目次の下に表示（`min-width: 62rem`）。
 
 **本文中の Amazon リンク**: `rehype-amazon-inline-affiliate-cards.mjs` が、リンクを含む段落の直後に `AmazonAffiliateCard` 相当の HTML を挿入（商品 `/dp/{ASIN}` に加え、Amazon 上の Audible ストア URL も対象）。段落が **Amazon アフィリエイト用リンクだけ**（他のテキストなし）のときは段落ごとカードに置き換え、リンク文字列は表示しない。記事末の `amazonAffiliate` ブロックの前にも同見出し（`AmazonAffiliateSectionHeading.astro`）。
 
@@ -200,7 +200,8 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 | `/tags/{tag}/` | `pages/tags/[tag].astro` | タグ別記事 |
 | `/search/` | `pages/search/index.astro` | クライアント検索 |
 | `/about/` | `pages/about.astro` | 静的 about |
-| `/tools/marathon-pace/` | `pages/tools/marathon-pace.astro` | 1km ペース別の想定タイム表（5秒刻み・2:50/km〜8:00/km、`marathon-pace-chart.ts` で生成）。トップからは未リンク |
+| `/tools/` | `pages/tools/index.astro` | ツール一覧（`src/data/tools.ts` の `SITE_TOOLS`） |
+| `/tools/marathon-pace/` | `pages/tools/marathon-pace.astro` | 1km ペース別の想定タイム表（5秒刻み・2:50/km〜8:00/km、`marathon-pace-chart.ts` で生成） |
 | `/tools/marathon-goal/` | `pages/tools/marathon-goal.astro` | フル目標タイム入力 → 1kmペース / 5km / 10km / 20km 換算（`src/utils/marathon-pace-calculator.ts`、クライアント計算） |
 | `/404` | `pages/404.astro` | 404 |
 
@@ -345,7 +346,12 @@ import photo from '@/assets/images/activities/example.jpg';
 
 ### OGP 画像（`src/utils/og-image/`）
 
-ビルド時に `satori` + `sharp` で 1200×630 PNG を生成する。
+ビルド時に 1200×630 PNG を生成する。
+
+- **青帯（ブログ名）**: サイトヘッダーと同じ `SiteHeaderBrand` を `/og/header-strip/` に表示し、`npm run capture:og-header`（Puppeteer）で `.cache/og-site-header-strip.png` に保存。記事 OGP はこれを `sharp` で上部に合成する。
+- **本文（カテゴリ・タグ・記事タイトル等）**: `satori` + `sharp`。フォントは `fonts.ts` で埋め込み（YakuHan は woff2 を `wawoff2` で TTF に展開）。
+
+`npm run build` は先に `capture:og-header` を実行する（Puppeteer 同梱の Chromium で `/og/header-strip/` を撮影）。ローカルで OGP だけ試すときも、初回は `npm run capture:og-header` が必要。
 
 | ルート | 用途 |
 |--------|------|

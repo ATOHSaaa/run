@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import PostCard from '@/components/PostCard.astro';
 import WaveDivider from '@/components/WaveDivider.astro';
 import { getCollection } from 'astro:content';
 import { formatDateYmd } from '@/utils/date';
@@ -18,7 +17,6 @@ import {
 import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
 import { resolveGearCoverImageUrl } from '@/utils/resolve-gear-cover-image';
 import { prefetchAmazonProductImages } from '../../../amazon-creators-products.mjs';
-import { resolveBlogTags } from '@/utils/blog-tags';
 import { getBlogPostHref } from '@/utils/blog-post-path';
 
 export async function getStaticPaths() {
@@ -78,19 +76,9 @@ const description = `「${label}」カテゴリの記事一覧です。`;
 
   {
     posts.length > 0 ? (
-      <ul class:list={['post-list', category === 'Tips' && 'post-list--tips-cards']}>
+      <ul class="post-list post-list--category">
         {posts.map((post) =>
-          category === 'Tips' ? (
-            <li>
-              <PostCard
-                href={getBlogPostHref(base, post.slug)}
-                title={getPostListLabel(post.data)}
-                pubDate={post.data.pubDate}
-                tags={resolveBlogTags(post)}
-                dateWithTags
-              />
-            </li>
-          ) : category === 'Activities' ? (
+          category === 'Tips' || category === 'Activities' ? (
             <li>
               <article class="post-row post-row--activities">
                 <h2 class="post-row__title post-row__title--with-date">
@@ -101,17 +89,6 @@ const description = `「${label}」カテゴリの記事一覧です。`;
                     {formatDateYmd(post.data.pubDate)}
                   </time>
                 </h2>
-                {
-                  resolveBlogTags(post).length > 0 && (
-                    <div class="post-row__tags">
-                      {resolveBlogTags(post).map((tag) => (
-                        <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
-                          #{tag}
-                        </a>
-                      ))}
-                    </div>
-                  )
-                }
               </article>
             </li>
           ) : category === 'Gears' ? (
@@ -128,27 +105,18 @@ const description = `「${label}」カテゴリの記事一覧です。`;
                       loading="lazy"
                       decoding="async"
                     />
-                    <h2 class="post-row__title">
+                    <h2 class="post-row__title post-row__title--with-date">
                       <a href={getBlogPostHref(base, post.slug)}>
                         {getPostListLabel(post.data)}
                       </a>
+                      <time class="post-row__inline-date" datetime={post.data.pubDate.toISOString()}>
+                        {formatDateYmd(post.data.pubDate)}
+                      </time>
                     </h2>
                   </div>
                   {gearListShowsArticleTitle(post.data) && (
                     <p class="post-row__subtitle">{getPostDisplayTitle(post.data)}</p>
                   )}
-                </div>
-                <div class="post-row__footer">
-                  <div class="post-row__tags">
-                    {resolveBlogTags(post).map((tag) => (
-                      <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
-                        #{tag}
-                      </a>
-                    ))}
-                  </div>
-                  <time class="post-row__date" datetime={post.data.pubDate.toISOString()}>
-                    {formatDateYmd(post.data.pubDate)}
-                  </time>
                 </div>
               </article>
             </li>
@@ -156,26 +124,17 @@ const description = `「${label}」カテゴリの記事一覧です。`;
             <li>
               <article class="post-row">
                 <div class="post-row__main">
-                  <h2 class="post-row__title">
+                  <h2 class="post-row__title post-row__title--with-date">
                     <a href={getBlogPostHref(base, post.slug)}>
                       {getPostListLabel(post.data)}
                     </a>
+                    <time class="post-row__inline-date" datetime={post.data.pubDate.toISOString()}>
+                      {formatDateYmd(post.data.pubDate)}
+                    </time>
                   </h2>
                   {gearListShowsArticleTitle(post.data) && (
                     <p class="post-row__subtitle">{getPostDisplayTitle(post.data)}</p>
                   )}
-                </div>
-                <div class="post-row__footer">
-                  <div class="post-row__tags">
-                    {resolveBlogTags(post).map((tag) => (
-                      <a class="tag" href={`${base}tags/${encodeURIComponent(tag)}/`}>
-                        #{tag}
-                      </a>
-                    ))}
-                  </div>
-                  <time class="post-row__date" datetime={post.data.pubDate.toISOString()}>
-                    {formatDateYmd(post.data.pubDate)}
-                  </time>
                 </div>
               </article>
             </li>
@@ -235,6 +194,10 @@ const description = `「${label}」カテゴリの記事一覧です。`;
     gap: var(--space-lg);
   }
 
+  .post-list:has(.post-row--activities) {
+    gap: 0;
+  }
+
   .post-row {
     display: flex;
     flex-direction: column;
@@ -269,22 +232,6 @@ const description = `「${label}」カテゴリの記事一覧です。`;
     padding-bottom: 0;
   }
 
-  .post-row__footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    margin-top: var(--space-sm);
-  }
-
-  .post-row__date {
-    flex-shrink: 0;
-    margin: 0;
-    font-size: 0.88rem;
-    color: var(--color-muted);
-  }
-
   .post-row__title {
     margin: 0;
     line-height: 1.45;
@@ -292,24 +239,28 @@ const description = `「${label}」カテゴリの記事一覧です。`;
   }
 
   .post-row__title--with-date {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.4rem var(--space-sm);
+    display: block;
+    line-height: 1.45;
+  }
+
+  .post-row__title--with-date a {
+    display: inline;
   }
 
   .post-row__inline-date {
-    flex-shrink: 0;
-    margin: 0;
-    font-size: 0.88rem;
+    display: inline;
+    margin: 0 0 0 0.45rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.05em;
     color: var(--color-muted);
     white-space: nowrap;
+    vertical-align: baseline;
   }
 
   .post-row--activities {
-    gap: var(--space-sm);
+    gap: 0;
+    padding-bottom: var(--space-md);
   }
 
   .post-row__title a {
@@ -326,25 +277,5 @@ const description = `「${label}」カテゴリの記事一覧です。`;
     font-size: 0.92rem;
     line-height: 1.45;
     color: var(--color-muted);
-  }
-
-  .post-row__tags {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-    min-width: 0;
-  }
-
-  .tag {
-    font-size: 0.88rem;
-    color: color-mix(in oklab, var(--color-muted) 78%, white);
-    text-decoration: none;
-    border-bottom: 1px dashed color-mix(in oklab, var(--color-muted) 32%, transparent);
-  }
-
-  .tag:hover {
-    color: color-mix(in oklab, var(--color-accent) 52%, white);
-    border-bottom-color: color-mix(in oklab, var(--color-accent) 32%, transparent);
   }
 </style>

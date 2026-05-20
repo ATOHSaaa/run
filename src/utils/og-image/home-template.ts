@@ -1,7 +1,8 @@
 import { OG_COLORS, SITE_TITLE } from './constants';
+import { OG_FONT_FAMILY } from './fonts';
 import { readPublicImageDataUrl } from './public-image';
 
-const FONT = 'Noto Sans JP';
+const FONT = OG_FONT_FAMILY;
 const SITE_MARK_PATH = 'images/runner-accent.png';
 
 type OgChildren = string | OgNode | Array<string | OgNode>;

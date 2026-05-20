@@ -222,7 +222,7 @@ const AMAZON_LINK_IN_BODY_PATTERN =
  * @param {string} body
  * @returns {string[]}
  */
-function collectAsinsFromAmazonLinksInBody(body) {
+export function collectAsinsFromAmazonLinksInBody(body) {
   /** @type {Set<string>} */
   const asins = new Set();
   for (const match of body.matchAll(AMAZON_LINK_IN_BODY_PATTERN)) {
@@ -350,4 +350,15 @@ export async function getAmazonProductImageSrc(asin) {
     await writeCacheFile(cache);
   }
   return restored;
+}
+
+/**
+ * @param {string} asin
+ * @returns {Promise<string | undefined>}
+ */
+export async function getAmazonProductTitle(asin) {
+  const normalized = asin.trim().toUpperCase();
+  const cache = await getCache();
+  const title = cache[normalized]?.title?.trim();
+  return title || undefined;
 }

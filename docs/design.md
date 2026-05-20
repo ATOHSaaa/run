@@ -116,7 +116,7 @@ Tips / Gears / Activities ブロック:
 | トークン | 値 | 用途 |
 |----------|-----|------|
 | `--site-max-width` | 68rem | メインカラム（トップ・記事・フッター内側） |
-| `--site-activities-max-width` | 40rem | Activities / News 記事本文幅 |
+| `--site-activities-max-width` | 40rem | Activities 記事本文幅（62rem 以上の PC のみ。スマホは他カテゴリと同幅） |
 | `--site-header-sticky-height` | 5.75rem（初期値） | 記事目次・ペース表 sticky の `top` 計算用。`Header.astro` の script が `.site-header` の実測高さ（px）で上書き（スマホ2行レイアウト対応） |
 
 **ブレークポイント（主なもの）**
@@ -207,7 +207,7 @@ Tips / Gears / Activities ブロック:
 | 種類 | 挙動 |
 |------|------|
 | 通常リンク（本文） | accent 色、下線、ホバーで下線をやや太く（太字にはしない） |
-| OGP 画像 | 1200×630 PNG。トップは `og/home.png`（青背景・マーク・タイトル）。記事は `og/blog/{slug}.png`（Tips/Activities はブログ名・カテゴリ・タグ・タイトル。Gears は商品写真入り） |
+| OGP 画像 | 1200×630 PNG。トップは `og/home.png`（青背景・マーク・タイトル）。記事は `og/blog/{slug}.png`（上部ヘッダーは青背景にアイコン＋ブログ名、本文は白背景にカテゴリ・タグ・記事タイトル。Gears は商品写真＋商品名） |
 | 外部リンク（Markdown） | **新しいタブ**（`rehype-external-links-blank`） |
 | サイト内（Markdown） | 基本 **新しいタブ**（`rehype-site-internal-links-blank`） |
 | 例外: `/gears/` | **同一タブ** |
@@ -233,10 +233,10 @@ Tips / Gears / Activities ブロック:
 
 | カテゴリ | 一覧での pill | 本文幅 | 特有 UI |
 |----------|---------------|--------|---------|
-| Activities | `pill--diary` | 狭め（40rem） | 練習ログ、カレンダー、活動リンク |
+| Activities | `pill--diary` | PC のみ狭め（40rem）。スマホは標準 | 練習ログ、カレンダー、活動リンク |
 | Tips | `pill--tips` | 標準（max-width 内 prose） | — |
 | Gears | `pill--tips` 修飾子 | 標準 | 末尾 Amazon カード可 |
-| News | `pill--news` | 狭め（Activities 同様） | — |
+| News | `pill--news` | 標準 | — |
 
 ---
 

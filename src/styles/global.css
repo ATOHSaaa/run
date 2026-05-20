@@ -27,7 +27,7 @@
   --site-header-sticky-height: 5.75rem;
   /** メインカラム（トップ・記事・フッター内側の揃え幅） */
   --site-max-width: 68rem;
-  /** Activities 記事・セクション（本文は Tips より少し狭く） */
+  /** Activities 記事本文（62rem 以上の PC のみ。Tips より少し狭く） */
   --site-activities-max-width: 40rem;
   /* 見出し階層（本文 .prose および main 内 h1〜h6） */
   --heading-h1-size: 45px;

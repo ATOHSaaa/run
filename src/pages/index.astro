@@ -583,6 +583,16 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .gears-card__label {
+      font-size: 0.72rem;
+      line-height: 1.32;
+    }
+
+    .gears-card__type {
+      margin-top: 0.28rem;
+      font-size: 0.6rem;
+    }
+
     .home-block--gears__head-mask {
       padding: clamp(1.35rem, 5.5vw, 1.75rem) clamp(1rem, 3.2vw, 1.35rem)
         clamp(1.45rem, 5vw, 1.8rem) clamp(1.25rem, 4vw, 2.1rem);

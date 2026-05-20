@@ -16,7 +16,7 @@ import { extractTocFromMarkdown } from '@/utils/markdown-toc';
 import { getPracticeLogAsideFromMarkdownBody } from '../../practice-log-parse.mjs';
 import { sortBlogPostsByPubDateDesc } from '@/utils/blog-post-sort';
 import { getAmazonAssociateTag } from '@/config/amazon-affiliate';
-import { resolveAmazonAffiliateItems } from '@/utils/resolve-amazon-affiliate-items';
+import { resolvePostAmazonAffiliateItems } from '@/utils/resolve-amazon-affiliate-items';
 import { prefetchAmazonProductImages } from '../../amazon-creators-products.mjs';
 import { getBlogOgImageUrl } from '@/utils/og-image/blog-og-url';
 import { resolveBlogTags } from '@/utils/blog-tags';
@@ -61,15 +61,11 @@ const allActivitiesPosts = needsActivitiesCalendar
   : [];
 const toc = extractTocFromMarkdown(post.body);
 const hasToc = toc.length > 0;
-const amazonAffiliateItems = await resolveAmazonAffiliateItems(
-  post.data.amazonAffiliate,
-  getAmazonAssociateTag(),
-);
+const amazonAffiliateItems = await resolvePostAmazonAffiliateItems(post, getAmazonAssociateTag());
 const hasAmazonAffiliates = amazonAffiliateItems.length > 0;
 const hasSidebar = hasToc || hasAmazonAffiliates;
 const isActivities = post.data.category === 'Activities';
-const usesActivitiesContentWidth =
-  post.data.category === 'Activities' || post.data.category === 'News';
+const usesActivitiesContentWidth = post.data.category === 'Activities';
 const articleMainClasses = ['site-main--article-detail'];
 if (hasSidebar) articleMainClasses.push('site-main--article-toc');
 const mainClass = articleMainClasses.join(' ');
@@ -233,10 +229,23 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
 
 <style>
   /**
-   * 記事詳細: main の右パディングだけ狭め（左は BaseLayout のまま）。
+   * 記事詳細: 横はみ出し防止。デスクトップ（目次サイドバー時）のみ右パディングを詰める。
    */
   :global(main.site-main.site-main--article-detail) {
-    padding-right: max(0.06rem, env(safe-area-inset-right, 0px));
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  @media (min-width: 62rem) {
+    :global(main.site-main.site-main--article-detail.site-main--article-toc) {
+      padding-right: max(0.06rem, env(safe-area-inset-right, 0px));
+    }
+  }
+
+  .article {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
 
@@ -303,7 +312,9 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
-    width: fit-content;
+    width: 100%;
+    text-align: justify;
+    text-justify: inter-character;
   }
 
   .article__date {
@@ -385,9 +396,17 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
   .article__content-with-sidebar {
     margin-top: var(--space-md);
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-lg);
     align-items: start;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  /** 目次・サイドバー用 Amazon はデスクトップのみ（狭い画面では下に回り込むため非表示） */
+  .article-sidebar {
+    display: none;
   }
 
   @media (min-width: 62rem) {
@@ -415,9 +434,17 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
       box-sizing: border-box;
     }
 
-    .article__content-with-sidebar--has-toc .article-sidebar {
+    .article-sidebar {
+      position: relative;
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      font-size: 0.88rem;
+      color: var(--color-text);
+      border-left: none;
+    }
+
+    .article__content-with-sidebar--has-toc .article-sidebar {
       align-self: stretch;
       margin-top: calc(-1 * var(--space-lg));
       padding: calc(0.2rem + var(--space-lg)) 0 var(--space-xl)
@@ -450,27 +477,71 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
       padding-top: 0;
       border-top: none;
     }
-  }
 
-  .article-sidebar {
-    position: relative;
-    min-width: 0;
-    font-size: 0.88rem;
-    color: var(--color-text);
-    border-left: none;
-    display: flex;
-    flex-direction: column;
+    .article-sidebar__toc {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1 1 auto;
+      max-height: min(45dvh, 18rem);
+    }
+
+    .article-sidebar__stick :global(.amazon-affiliate-sidebar) {
+      flex-shrink: 0;
+    }
   }
 
   .article__body-wrap {
     min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
-  .article__main--activities {
-    width: 100%;
-    max-width: var(--site-activities-max-width);
-    margin-inline: auto;
-    box-sizing: border-box;
+  .article__body.prose .article__main {
+    min-width: 0;
+    max-width: 100%;
+    word-break: break-all;
+  }
+
+  .article__body.prose .article__main :global(.amazon-affiliate-card) {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  @media (max-width: 24.99rem) {
+    .article__body.prose .article__main :global(.amazon-affiliate-card) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .article__body.prose .article__main :global(.amazon-affiliate-card__media) {
+      max-width: 9rem;
+    }
+  }
+
+  @media (max-width: 61.9375rem) {
+    .article__title {
+      font-size: clamp(1.375rem, 4.8vw + 0.5rem, 1.875rem);
+      line-height: 1.28;
+      text-justify: auto;
+    }
+
+    .article__body.prose .article__main {
+      text-justify: auto;
+      line-height: 1.65;
+    }
+
+    .article__body.prose .article__main :global(p) {
+      margin-bottom: var(--space-lg);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .article__body.prose .article__main--activities {
+      width: 100%;
+      max-width: var(--site-activities-max-width);
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
   }
 
   .article__body {
@@ -494,6 +565,9 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
   .article__body.prose .article__main :global(h6),
   .article__body.prose .article__main :global(pre) {
     text-align: start;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .article__body.prose .article__main :global(p:has(+ .article-figure)) {
@@ -502,8 +576,9 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
 
   .article__body.prose .article__main :global(.article-figure) {
     margin: var(--space-md) 0 48px;
-    padding-inline: clamp(2rem, 6vw, 3.25rem);
+    padding-inline: clamp(0.5rem, 3vw, 3.25rem);
     box-sizing: border-box;
+    max-width: 100%;
   }
 
   .article__body.prose .article__main :global(.article-figure__img),
@@ -540,8 +615,9 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
 
   .article__body.prose .article__main :global(p:has(> img)) {
     margin-bottom: 48px;
-    padding-inline: clamp(2rem, 6vw, 3.25rem);
+    padding-inline: clamp(0.5rem, 3vw, 3.25rem);
     box-sizing: border-box;
+    max-width: 100%;
   }
 
   .article__body.prose .article__main :global(.article-figure__caption) {
@@ -670,13 +746,25 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
   }
 
   .article__body.prose .article__main :global(table) {
+    display: block;
     width: 100%;
+    max-width: 100%;
     margin: var(--space-md) 0;
     border-collapse: collapse;
     font-size: 0.9375rem;
     line-height: 1.45;
     text-align: start;
     text-justify: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .article__body.prose .article__main :global(table thead),
+  .article__body.prose .article__main :global(table tbody),
+  .article__body.prose .article__main :global(table tr) {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
   }
 
   .article__body.prose .article__main :global(th),
@@ -697,19 +785,13 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
 
   .article__practice.article__practice--above-body {
     width: 100%;
+    max-width: 100%;
     margin: 0 0 40px;
+    padding-bottom: 1rem;
     box-sizing: border-box;
     text-align: center;
-  }
-
-  .article__practice.article__practice--above-body::after {
-    content: '';
-    display: block;
-    width: 100vw;
-    max-width: none;
-    height: 3px;
-    margin-left: calc(50% - 50vw);
-    background: var(--color-accent);
+    overflow-x: clip;
+    border-bottom: 3px solid var(--color-accent);
   }
 
   .article__practice :global(.article__practice-log) {
@@ -877,18 +959,7 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
     margin-inline: auto;
     padding-inline: var(--space-md);
     box-sizing: border-box;
-    overflow-x: visible;
-  }
-
-  .article-activities-calendar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 100vw;
-    height: 3px;
-    margin-left: -50vw;
-    background: var(--color-accent);
-    pointer-events: none;
+    overflow-x: clip;
+    border-top: 3px solid var(--color-accent);
   }
 </style>

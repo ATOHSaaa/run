@@ -1,5 +1,14 @@
-import { extractAsinFromAmazonUrl, toAmazonAffiliateUrl } from '@/config/amazon-affiliate';
-import { getAmazonProductImageSrc } from '../../amazon-creators-products.mjs';
+import type { CollectionEntry } from 'astro:content';
+import {
+  buildAmazonDpProductUrl,
+  extractAsinFromAmazonUrl,
+  toAmazonAffiliateUrl,
+} from '@/config/amazon-affiliate';
+import {
+  collectAsinsFromAmazonLinksInBody,
+  getAmazonProductImageSrc,
+  getAmazonProductTitle,
+} from '../../amazon-creators-products.mjs';
 
 export type AmazonAffiliateFrontmatter = {
   href: string;
@@ -41,4 +50,50 @@ export async function resolveAmazonAffiliateItems(
       };
     }),
   );
+}
+
+function affiliateLabelForProductName(productName: string): string {
+  const short = productName.length > 40 ? `${productName.slice(0, 40)}…` : productName;
+  return `Amazonで「${short}」を探す`;
+}
+
+/**
+ * フロントマターの `amazonAffiliate` に加え、本文中の Amazon 商品リンク（`/dp/{ASIN}`）もサイドバー用に解決する。
+ */
+export async function resolvePostAmazonAffiliateItems(
+  post: CollectionEntry<'blog'>,
+  associateTag: string,
+): Promise<ResolvedAmazonAffiliateItem[]> {
+  const fromFrontmatter = await resolveAmazonAffiliateItems(
+    post.data.amazonAffiliate,
+    associateTag,
+  );
+
+  const seenAsins = new Set<string>();
+  for (const item of fromFrontmatter) {
+    const asin = item.asin?.trim().toUpperCase() || extractAsinFromAmazonUrl(item.href);
+    if (asin) seenAsins.add(asin);
+  }
+
+  const fromBody: ResolvedAmazonAffiliateItem[] = [];
+
+  for (const asin of collectAsinsFromAmazonLinksInBody(post.body)) {
+    if (seenAsins.has(asin)) continue;
+    seenAsins.add(asin);
+
+    const title = await getAmazonProductTitle(asin);
+    const productName = title ?? asin;
+    const href = toAmazonAffiliateUrl(buildAmazonDpProductUrl(asin, associateTag), associateTag);
+    const imageSrc = await getAmazonProductImageSrc(asin);
+
+    fromBody.push({
+      href,
+      label: affiliateLabelForProductName(productName),
+      productName,
+      asin,
+      imageSrc,
+    });
+  }
+
+  return [...fromFrontmatter, ...fromBody];
 }

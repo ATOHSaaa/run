@@ -1,0 +1,67 @@
+---
+import { SITE_TITLE } from '@/utils/og-image/constants';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<div class="site-header__brand">
+  <span class="site-header__mark-ring" aria-hidden="true">
+    <img
+      src={`${base}images/runner-accent.png`}
+      width="56"
+      height="56"
+      alt=""
+      class="site-header__mark"
+      loading="eager"
+      decoding="async"
+    />
+  </span>
+  <p class="site-header__title">
+    <a href={base}>{SITE_TITLE}</a>
+  </p>
+</div>
+
+<style is:global>
+  .site-header__brand {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-sm);
+    min-width: 0;
+    text-align: left;
+    flex: 1 1 auto;
+  }
+
+  .site-header__mark-ring {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(48px, 11vw, 68px);
+    height: clamp(48px, 11vw, 68px);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px color-mix(in oklab, black 12%, transparent);
+  }
+
+  .site-header__mark {
+    width: clamp(42px, 9.5vw, 60px);
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .site-header__title {
+    margin: 0;
+    font-size: clamp(1.25rem, 3.8vw, 2.35rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    min-width: 0;
+  }
+
+  .site-header__title a {
+    color: #fff;
+    text-decoration: none;
+  }
+</style>

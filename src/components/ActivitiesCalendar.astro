@@ -265,6 +265,22 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
 
 <style>
   .diary-calendar-wrap {
+    /* タイポ・セル寸法（スマホは @media で変数だけ上書き） */
+    --ac-font-chrome-btn: 0.88rem;
+    --ac-font-month: clamp(1.15rem, 3.2vw, 1.45rem);
+    --ac-font-caption: 0.95rem;
+    --ac-font-table: 0.82rem;
+    --ac-font-weekday: 0.78rem;
+    --ac-font-day: 0.86rem;
+    --ac-font-entry: 0.74rem;
+    --ac-line-entry: 1.4;
+    --ac-chrome-btn-pad: 0.4rem 0.75rem;
+    --ac-weekday-pad: 0.38rem 0.2rem;
+    --ac-cell-min-height: clamp(5.35rem, 14.5vw, 6.5rem);
+    --ac-cell-pad: 0.35rem 0.22rem 0.28rem 0.38rem;
+    --ac-today-badge: 1.55rem;
+    --ac-entries-offset: 0.95rem;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -297,9 +313,9 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
   .activities-calendar__btn {
     flex: 0 0 auto;
     margin: 0;
-    padding: 0.4rem 0.75rem;
+    padding: var(--ac-chrome-btn-pad);
     font-family: inherit;
-    font-size: 0.88rem;
+    font-size: var(--ac-font-chrome-btn);
     font-weight: 600;
     letter-spacing: 0.04em;
     color: #000;
@@ -329,7 +345,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
     flex: 1 1 auto;
     margin: 0;
     min-width: 0;
-    font-size: clamp(1.15rem, 3.2vw, 1.45rem);
+    font-size: var(--ac-font-month);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-align: center;
@@ -343,7 +359,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
 
   .diary-calendar__caption {
     margin: 0 0 var(--space-md);
-    font-size: 0.95rem;
+    font-size: var(--ac-font-caption);
     font-weight: 700;
     color: var(--color-muted);
     letter-spacing: 0.06em;
@@ -353,17 +369,17 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    font-size: 0.82rem;
+    font-size: var(--ac-font-table);
   }
 
   .diary-calendar__weekday {
     width: 14.2857%;
-    padding: 0.38rem 0.2rem;
+    padding: var(--ac-weekday-pad);
     font-weight: 600;
     color: var(--color-muted);
     border-bottom: 2px solid #000;
     text-align: center;
-    font-size: 0.78rem;
+    font-size: var(--ac-font-weekday);
     line-height: 1.25;
   }
 
@@ -424,14 +440,13 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
 
   .diary-calendar__cell-inner {
     box-sizing: border-box;
-    /* 日付行 + 本文リンク約3行分（0.74rem × 1.4 × 3 行程度） */
-    min-height: clamp(5.35rem, 14.5vw, 6.5rem);
-    padding: 0.35rem 0.22rem 0.28rem 0.38rem;
+    min-height: var(--ac-cell-min-height);
+    padding: var(--ac-cell-pad);
     overflow: hidden;
   }
 
   .diary-calendar__day-num {
-    font-size: 0.86rem;
+    font-size: var(--ac-font-day);
     font-weight: 700;
     color: #000;
     line-height: 1;
@@ -441,8 +456,8 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.55rem;
-    min-height: 1.55rem;
+    min-width: var(--ac-today-badge);
+    min-height: var(--ac-today-badge);
     padding: 0 0.15rem;
     border-radius: 50%;
     background: #15803d;
@@ -460,7 +475,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
   /* 当日だけ日付が円バッジで背が高い。他の日は記録の上余白を多めにして行揃え */
   .diary-calendar__cell:not(.diary-calendar__cell--today):not(.diary-calendar__cell--pad)
     .diary-calendar__entries {
-    margin-top: 0.95rem;
+    margin-top: var(--ac-entries-offset);
   }
 
   .diary-calendar__entry {
@@ -474,8 +489,8 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
     position: absolute;
     left: 0;
     top: 0;
-    font-size: 0.74rem;
-    line-height: 1.4;
+    font-size: var(--ac-font-entry);
+    line-height: var(--ac-line-entry);
     color: #000;
   }
 
@@ -484,8 +499,8 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
   }
 
   .diary-calendar__link {
-    font-size: 0.74rem;
-    line-height: 1.4;
+    font-size: var(--ac-font-entry);
+    line-height: var(--ac-line-entry);
     color: #000;
     text-decoration: underline;
     text-decoration-color: #000;
@@ -502,6 +517,29 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
     color: #000;
     text-decoration: underline;
     text-decoration-thickness: 2px;
+  }
+
+  /**
+   * スマホ: カレンダー内タイポをコンパクトに（デスクトップ比おおよそ 75%）。
+   * 調整は .diary-calendar-wrap の変数だけ触ればよい。
+   */
+  @media (max-width: 47.9375rem) {
+    .diary-calendar-wrap {
+      --ac-font-chrome-btn: 0.65rem;
+      --ac-font-month: clamp(0.84rem, 2.3vw, 0.98rem);
+      --ac-font-caption: 0.7rem;
+      --ac-font-table: 0.61rem;
+      --ac-font-weekday: 0.58rem;
+      --ac-font-day: 0.63rem;
+      --ac-font-entry: 0.54rem;
+      --ac-line-entry: 1.32;
+      --ac-chrome-btn-pad: 0.28rem 0.46rem;
+      --ac-weekday-pad: 0.22rem 0.06rem;
+      --ac-cell-min-height: clamp(3.85rem, 10.5vw, 4.6rem);
+      --ac-cell-pad: 0.16rem 0.08rem 0.12rem 0.16rem;
+      --ac-today-badge: 1.15rem;
+      --ac-entries-offset: 0.62rem;
+    }
   }
 
   /* 親の max-width に関係なくビューポート全幅（wrap の外に配置し、50% は親・50vw は画面基準） */

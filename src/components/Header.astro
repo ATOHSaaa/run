@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import SiteHeaderBrand from '@/components/SiteHeaderBrand.astro';
 import { getPostDisplayTitle } from '@/utils/post-title';
 import { getBlogPostHref } from '@/utils/blog-post-path';
 import { getBlogCategoryListHref } from '@/utils/blog-category-path';
@@ -30,22 +31,7 @@ const tickerNewsHref = latestNewsPost
 
 <header class="site-header">
   <div class="site-header__inner">
-    <div class="site-header__brand">
-      <span class="site-header__mark-ring" aria-hidden="true">
-        <img
-          src={`${base}images/runner-accent.png`}
-          width="56"
-          height="56"
-          alt=""
-          class="site-header__mark"
-          loading="eager"
-          decoding="async"
-        />
-      </span>
-      <p class="site-header__title">
-        <a href={base}>体重100kgからサブ3を目指すブログ</a>
-      </p>
-    </div>
+    <SiteHeaderBrand />
     <div class="site-header__tools">
       <nav class="site-header__nav" aria-label="トップのセクション">
         <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Tips')}>Tips</a>
@@ -155,16 +141,6 @@ const tickerNewsHref = latestNewsPost
     gap: var(--space-sm) var(--space-md);
     container-type: inline-size;
     container-name: site-header-inner;
-  }
-
-  .site-header__brand {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: var(--space-sm);
-    min-width: 0;
-    text-align: left;
-    flex: 1 1 auto;
   }
 
   .site-header__tools {
@@ -334,39 +310,6 @@ const tickerNewsHref = latestNewsPost
     outline: 2px solid #fff;
     outline-offset: 3px;
     border-radius: 2px;
-  }
-
-  .site-header__mark-ring {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: clamp(44px, 9.2vw, 56px);
-    height: clamp(44px, 9.2vw, 56px);
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 3px color-mix(in oklab, black 12%, transparent);
-  }
-
-  .site-header__mark {
-    width: clamp(38px, 8.4vw, 50px);
-    height: auto;
-    object-fit: contain;
-    display: block;
-  }
-
-  .site-header__title {
-    margin: 0;
-    font-size: clamp(1.15rem, 3.1vw, 1.75rem);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    line-height: 1.25;
-    min-width: 0;
-  }
-
-  .site-header__title a {
-    color: #fff;
-    text-decoration: none;
   }
 
   /* 内側幅が足りず2行になった時点で中央寄せ（768px 未満を待たない） */
