@@ -2,9 +2,14 @@ import type { CollectionEntry } from 'astro:content';
 import { resolveBlogTags } from '@/utils/blog-tags';
 import { getCategoryDisplayLabel } from '@/utils/category-label';
 import { getGearDisplayName, getPostDisplayTitle, gearListShowsArticleTitle } from '@/utils/post-title';
-import { OG_COLORS } from './constants';
+import {
+  OG_ARTICLE_TITLE_MAX_WIDTH,
+  OG_COLORS,
+  OG_GEARS_TITLE_MAX_WIDTH,
+} from './constants';
 import { OG_FONT_FAMILY } from './fonts';
-import { splitTitleLines, truncateText } from './truncate';
+import { truncateText } from './truncate';
+import { layoutOgTitle } from './wrap-title';
 import { resolveGearOgImageDataUrl } from './gear-image';
 
 const FONT = OG_FONT_FAMILY;
@@ -69,8 +74,7 @@ function tagPill(label: string): OgNode {
   );
 }
 
-function titleBlock(lines: string[], centered = true): OgNode {
-  const fontSize = lines[0].length > 36 || (lines[1] && lines[1].length > 36) ? 52 : 60;
+function titleBlock(lines: string[], fontSize: number, centered = true): OgNode {
   return ogEl(
     'div',
     {
@@ -91,6 +95,7 @@ function titleBlock(lines: string[], centered = true): OgNode {
           lineHeight: 1.25,
           letterSpacing: '0.02em',
           textAlign: centered ? 'center' : 'left',
+          whiteSpace: 'nowrap',
         },
         line,
       ),
@@ -119,7 +124,11 @@ function ogCardBody(body: OgNode): OgNode {
   );
 }
 
-function centeredArticleBlock(pills: OgNode[], titleLines: string[]): OgNode {
+function centeredArticleBlock(
+  pills: OgNode[],
+  titleLines: string[],
+  titleFontSize: number,
+): OgNode {
   return ogEl(
     'div',
     {
@@ -146,7 +155,7 @@ function centeredArticleBlock(pills: OgNode[], titleLines: string[]): OgNode {
         },
         pills,
       ),
-      titleBlock(titleLines, true),
+      titleBlock(titleLines, titleFontSize, true),
     ],
   );
 }
@@ -155,14 +164,17 @@ async function buildStandardTemplate(entry: CollectionEntry<'blog'>): Promise<Og
   const { category } = entry.data;
   const tags = resolveBlogTags(entry);
   const articleTitle = getPostDisplayTitle(entry.data);
-  const titleLines = splitTitleLines(articleTitle, 28);
+  const { lines: titleLines, fontSize: titleFontSize } = await layoutOgTitle(
+    articleTitle,
+    OG_ARTICLE_TITLE_MAX_WIDTH,
+  );
   const displayTags = tags.slice(0, 4).map((t) => truncateText(t, 14));
   const pills = [
     categoryPill(getCategoryDisplayLabel(category)),
     ...displayTags.map(tagPill),
   ];
 
-  return ogCardBody(centeredArticleBlock(pills, titleLines));
+  return ogCardBody(centeredArticleBlock(pills, titleLines, titleFontSize));
 }
 
 async function buildGearsTemplate(entry: CollectionEntry<'blog'>): Promise<OgNode> {
@@ -170,7 +182,10 @@ async function buildGearsTemplate(entry: CollectionEntry<'blog'>): Promise<OgNod
   const articleTitle = getPostDisplayTitle(entry.data);
   const showArticleTitle = gearListShowsArticleTitle(entry.data);
   const productImage = await resolveGearOgImageDataUrl(entry);
-  const gearLines = splitTitleLines(gearName, 22);
+  const { lines: gearLines, fontSize: gearFontSize } = await layoutOgTitle(
+    gearName,
+    OG_GEARS_TITLE_MAX_WIDTH,
+  );
 
   const leftColumn: OgNode = productImage
     ? ogEl(
@@ -213,7 +228,7 @@ async function buildGearsTemplate(entry: CollectionEntry<'blog'>): Promise<OgNod
         'Gears',
       );
 
-  const gearTitleBlock = titleBlock(gearLines, true);
+  const gearTitleBlock = titleBlock(gearLines, gearFontSize, true);
 
   const subtitle = showArticleTitle
     ? ogEl(

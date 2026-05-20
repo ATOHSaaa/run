@@ -5,31 +5,36 @@ const base = import.meta.env.BASE_URL;
 ---
 
 <div class="site-header__brand">
-  <span class="site-header__mark-ring" aria-hidden="true">
-    <img
-      src={`${base}images/runner-accent.png`}
-      width="56"
-      height="56"
-      alt=""
-      class="site-header__mark"
-      loading="eager"
-      decoding="async"
-    />
-  </span>
-  <p class="site-header__title">
-    <a href={base}>{SITE_TITLE}</a>
-  </p>
+  <div class="site-header__brand-row">
+    <span class="site-header__mark-ring" aria-hidden="true">
+      <img
+        src={`${base}images/runner-accent.png`}
+        width="56"
+        height="56"
+        alt=""
+        class="site-header__mark"
+        loading="eager"
+        decoding="async"
+      />
+    </span>
+    <p class="site-header__title">
+      <a href={base}>{SITE_TITLE}</a>
+    </p>
+  </div>
 </div>
 
 <style is:global>
   .site-header__brand {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: var(--space-sm);
-    min-width: 0;
-    text-align: left;
     flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .site-header__brand-row {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--space-sm);
+    max-width: 100%;
   }
 
   .site-header__mark-ring {
@@ -37,15 +42,15 @@ const base = import.meta.env.BASE_URL;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: clamp(48px, 11vw, 68px);
-    height: clamp(48px, 11vw, 68px);
+    width: clamp(34px, 8.5vw, 68px);
+    height: clamp(34px, 8.5vw, 68px);
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 1px 3px color-mix(in oklab, black 12%, transparent);
   }
 
   .site-header__mark {
-    width: clamp(42px, 9.5vw, 60px);
+    width: clamp(30px, 7.2vw, 60px);
     height: auto;
     object-fit: contain;
     display: block;
@@ -53,15 +58,35 @@ const base = import.meta.env.BASE_URL;
 
   .site-header__title {
     margin: 0;
-    font-size: clamp(1.25rem, 3.8vw, 2.35rem);
+    flex-shrink: 0;
+    font-size: clamp(0.75rem, 2.4vw + 0.45rem, 2.35rem);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.02em;
     line-height: 1.25;
-    min-width: 0;
   }
 
   .site-header__title a {
+    display: block;
+    white-space: nowrap;
     color: #fff;
     text-decoration: none;
+  }
+
+  @container (max-width: 64rem) {
+    .site-header__brand {
+      flex: 1 1 100%;
+      flex-basis: 100%;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .site-header__title {
+      font-size: 0.75rem;
+      letter-spacing: 0.01em;
+    }
   }
 </style>

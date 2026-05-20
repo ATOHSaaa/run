@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import opentype from '@shuding/opentype.js';
 import { decompress } from 'wawoff2';
 
 type OgFont = {
@@ -10,6 +11,7 @@ type OgFont = {
 };
 
 let fontsPromise: Promise<OgFont[]> | null = null;
+let titleMeasureFontPromise: Promise<opentype.Font> | null = null;
 
 const ROOT = process.cwd();
 
@@ -19,6 +21,20 @@ export const OG_FONT_FAMILY = 'Inter, YakuHanJPs, "Zen Kaku Gothic New"';
 export function getOgFonts(): Promise<OgFont[]> {
   if (!fontsPromise) fontsPromise = loadOgFonts();
   return fontsPromise;
+}
+
+/** タイトル折り返しの幅計測用（OG タイトルは weight 900） */
+export function getOgTitleMeasureFont(): Promise<opentype.Font> {
+  if (!titleMeasureFontPromise) titleMeasureFontPromise = loadOgTitleMeasureFont();
+  return titleMeasureFontPromise;
+}
+
+async function loadOgTitleMeasureFont(): Promise<opentype.Font> {
+  const zenDir = path.join(ROOT, 'node_modules/@fontsource/zen-kaku-gothic-new/files');
+  const zen900 = await readFontFile(
+    path.join(zenDir, 'zen-kaku-gothic-new-japanese-900-normal.woff'),
+  );
+  return opentype.parse(zen900);
 }
 
 function toArrayBuffer(buf: Buffer): ArrayBuffer {

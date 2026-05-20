@@ -33,14 +33,15 @@ const tickerNewsHref = latestNewsPost
   <div class="site-header__inner">
     <SiteHeaderBrand />
     <div class="site-header__tools">
-      <nav class="site-header__nav" aria-label="トップのセクション">
-        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Tips')}>Tips</a>
-        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Gears')}>Gears</a>
-        <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Activities')}>
-          Activities
-        </a>
-      </nav>
-      <form class="site-header__search" method="get" action={`${base}search/`} role="search">
+      <div class="site-header__tools-row">
+        <nav class="site-header__nav" aria-label="トップのセクション">
+          <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Tips')}>Tips</a>
+          <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Gears')}>Gears</a>
+          <a class="site-header__nav-link" href={getBlogCategoryListHref(base, 'Activities')}>
+            Activities
+          </a>
+        </nav>
+        <form class="site-header__search" method="get" action={`${base}search/`} role="search">
         <label class="sr-only" for="site-header-search-q">記事を検索</label>
         <div class="site-header__search-field">
           <span class="site-header__search-icon" aria-hidden="true">
@@ -65,7 +66,8 @@ const tickerNewsHref = latestNewsPost
           />
         </div>
         <button class="site-header__search-submit" type="submit">GO!</button>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </header>
@@ -140,22 +142,26 @@ const tickerNewsHref = latestNewsPost
     justify-content: space-between;
     gap: var(--space-sm) var(--space-md);
     container-type: inline-size;
-    container-name: site-header-inner;
   }
 
   .site-header__tools {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-sm) var(--space-md);
     flex-shrink: 0;
     margin-left: auto;
+    min-width: 0;
+  }
+
+  .site-header__tools-row {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    max-width: 100%;
   }
 
   .site-header__nav {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: flex-end;
     gap: 0.35rem 1.15rem;
@@ -312,45 +318,29 @@ const tickerNewsHref = latestNewsPost
     border-radius: 2px;
   }
 
-  /* 内側幅が足りず2行になった時点で中央寄せ（768px 未満を待たない） */
-  @container site-header-inner (max-width: 64rem) {
-    .site-header__brand {
-      flex: 1 1 100%;
-      justify-content: center;
-      text-align: center;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .site-header__title {
-      text-align: center;
-    }
-
-    .site-header__title a {
-      display: inline-block;
-      max-width: 100%;
-    }
-
+  /*
+   * ヘッダー内側が狭くメニューが下段に回ったとき（inner 幅で判定）。
+   * tools-row を中央に置く（margin-left: auto を解除）。
+   */
+  @container (max-width: 64rem) {
     .site-header__tools {
       flex: 1 1 100%;
+      flex-basis: 100%;
       margin-left: 0;
+      margin-right: 0;
       width: 100%;
-      max-width: 100%;
       justify-content: center;
-      flex-wrap: nowrap;
     }
+  }
 
-    .site-header__nav {
+  @media (max-width: 64rem) {
+    .site-header__tools {
+      flex: 1 1 100%;
+      flex-basis: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      width: 100%;
       justify-content: center;
-      flex-wrap: nowrap;
-      width: auto;
-      flex: 0 1 auto;
-      min-width: 0;
-    }
-
-    .site-header__search {
-      flex: 0 0 auto;
-      margin-inline: 0;
     }
   }
 

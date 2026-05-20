@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "capture:og-header": "node scripts/capture-og-header.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -25,5 +26,8 @@
     "unist-util-visit": "^5.1.0",
     "wawoff2": "^2.0.1",
     "yakuhanjp": "^4.1.1"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.8.2"
   }
 }

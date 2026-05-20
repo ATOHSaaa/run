@@ -200,7 +200,7 @@ Activities 用の月次カレンダー + 登録運動アイコン凡例。
 | `/tags/{tag}/` | `pages/tags/[tag].astro` | タグ別記事 |
 | `/search/` | `pages/search/index.astro` | クライアント検索 |
 | `/about/` | `pages/about.astro` | 静的 about |
-| `/tools/` | `pages/tools/index.astro` | ツール一覧（`src/data/tools.ts` の `SITE_TOOLS`） |
+| `/tools/` | `pages/tools/index.astro` | Tools 一覧（`src/data/tools.ts` の `SITE_TOOLS`） |
 | `/tools/marathon-pace/` | `pages/tools/marathon-pace.astro` | 1km ペース別の想定タイム表（5秒刻み・2:50/km〜8:00/km、`marathon-pace-chart.ts` で生成） |
 | `/tools/marathon-goal/` | `pages/tools/marathon-goal.astro` | フル目標タイム入力 → 1kmペース / 5km / 10km / 20km 換算（`src/utils/marathon-pace-calculator.ts`、クライアント計算） |
 | `/404` | `pages/404.astro` | 404 |
@@ -348,12 +348,12 @@ import photo from '@/assets/images/activities/example.jpg';
 
 ビルド時に 1200×630 PNG を生成する。
 
-- **青帯（ブログ名）**: `src/assets/og/site-header-strip.png`（コミット済み）を `sharp` で記事 OGP 上部に合成。`SiteHeaderBrand` の見た目を変えたときは `/og/header-strip/`（1200px 幅）をブラウザで撮り直し、同 PNG をコミットする。
+- **青帯（ブログ名）**: `src/assets/og/site-header-strip.png`（コミット済み）を `sharp` で記事 OGP 上部に合成。見た目を変えたときは `npm run capture:og-header`（Puppeteer・**devDependencies のみ**。`build` では実行しない）で `/og/header-strip/` から再生成する。
 - **本文（カテゴリ・タグ・記事タイトル等）**: `satori` + `sharp`。フォントは `fonts.ts` で埋め込み（YakuHan は woff2 を `wawoff2` で TTF に展開）。
 
 | ルート | 用途 |
 |--------|------|
-| `/og/home.png` | トップ（`index.astro`）。青背景（`#1d4ed8`）にサイトマーク（`public/images/runner-accent.png`）とブログタイトル |
+| `/og/home.png` | トップ（`index.astro`）。青背景にヘッダーブランドを `home-brand-template.ts`（satori）で中央描画。記事 OGP の青帯は `site-header-strip.png` を上部合成 |
 | `/og/blog/{slug}.png` | 記事詳細 |
 
 記事 OGP のレイアウト:
@@ -362,6 +362,8 @@ import photo from '@/assets/images/activities/example.jpg';
 |----------|------------|
 | Tips / Activities / News | ブログ名・カテゴリ pill・タグ（最大4）・記事タイトル |
 | Gears | 左に商品画像（`coverImage` または `public/gears/amazon/{ASIN}.jpg`）・右にブログ名・Gears pill・商品名 |
+
+記事タイトルは `wrap-title.ts` で **最大3行**（Zen Kaku 900 の実測幅。本文エリアの最大幅 `OG_ARTICLE_TITLE_MAX_WIDTH` 等で折り返し。3行以内に収まる場合は省略なし。4行目以降が必要なときだけ最終行を `…` で切り詰め。52px への縮小は3行に収まるフォントサイズの選択用）。青帯のブログ名は `header-strip.astro` で `white-space: nowrap` とコンテナ幅ベースの `font-size`。
 
 プレビュー: ローカル `http://localhost:4321/og/blog/{slug}.png`、記事 URL を [opengraph.xyz](https://www.opengraph.xyz/) や [Meta Sharing Debugger](https://developers.facebook.com/tools/debug/) に渡す。
 - **Amazon 商品リンク**: 通常 URL を書くと `rehype-amazon-affiliate-links` が `AMAZON_ASSOCIATE_TAG` 付き URL に変換（`rel="sponsored"`）

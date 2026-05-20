@@ -138,7 +138,8 @@ Tips / Gears / Activities ブロック:
 - **背景**: `--color-accent` 全面
 - **下線**: 2px、`color-mix(black 12%, accent)`
 - **sticky** `top: 0` / `z-index: 100`
-- **ブランド**: ランナー PNG（56×56）+ サイトタイトルリンク（白系想定の上に載るスタイルはコンポーネント内定義）
+- **折り返し時**（`site-header__inner` の container query `64rem` 未満）: ブランド行・下段（Tips / Gears / Activities + 検索）をそれぞれ中央寄せ
+- **ブランド**: ランナー PNG + サイトタイトル（`SiteHeaderBrand.astro`）。`.site-header__brand-row` で常に横並び。タイトルは `clamp` / スマホ `0.75rem` で 1 行に収める。**63.9375rem 未満**は `.site-header__brand` を `justify-content: center` で中央寄せ。OG strip は `og/header-strip.astro` で上書き
 - **ナビ**: Tips / Gears / Activities（アンカー）
 - **検索**: 白フィールド + 「GO!」ボタン
 - **横マーキー**（`hideSiteMarquees` で非表示可）: プロフィール・最新 News を横スクロール
@@ -208,7 +209,7 @@ Tips / Gears / Activities ブロック:
 | 種類 | 挙動 |
 |------|------|
 | 通常リンク（本文） | accent 色、下線、ホバーで下線をやや太く（太字にはしない） |
-| OGP 画像 | 1200×630 PNG。トップは `og/home.png`（青背景・マーク・タイトル）。記事は `og/blog/{slug}.png`（上部ヘッダーは青背景にアイコン＋ブログ名、本文は白背景にカテゴリ・タグ・記事タイトル。Gears は商品写真＋商品名） |
+| OGP 画像 | 1200×630 PNG。トップは `og/home.png`（青背景・satori でブランド中央描画）。記事は `og/blog/{slug}.png`（上部に `site-header-strip.png`、本文は白背景にカテゴリ・タグ・記事タイトル。Gears は商品写真＋商品名） |
 | 外部リンク（Markdown） | **新しいタブ**（`rehype-external-links-blank`） |
 | サイト内（Markdown） | 基本 **新しいタブ**（`rehype-site-internal-links-blank`） |
 | 例外: `/gears/` | **同一タブ** |
