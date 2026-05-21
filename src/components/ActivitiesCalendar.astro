@@ -9,10 +9,7 @@ import {
   enumerateDiaryMonthsUtc,
   pickDiaryCalendarMonth,
 } from '@/utils/diary-calendar';
-import { calendarYmdPartsInTz, PROFILE_AGE_TIME_ZONE } from '@/utils/profile-age';
-
-const todayParts = calendarYmdPartsInTz(new Date(), PROFILE_AGE_TIME_ZONE);
-const todayDateKey = `${todayParts.y}-${String(todayParts.m).padStart(2, '0')}-${String(todayParts.d).padStart(2, '0')}`;
+import { PROFILE_AGE_TIME_ZONE } from '@/utils/profile-age';
 
 interface Props {
   activitiesPosts: CollectionEntry<'blog'>[];
@@ -111,10 +108,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
             {
               panel.rows.map((row) => (
                 <tr>
-                  {row.map((cell) => {
-                    const isToday =
-                      cell.dateKey !== null && cell.dateKey === todayDateKey && cell.day !== null;
-                    return (
+                  {row.map((cell) => (
                     <td
                       class:list={[
                         'diary-calendar__cell',
@@ -122,7 +116,6 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
                           'diary-calendar__cell--pad': cell.day === null,
                           'diary-calendar__cell--adjacent': cell.isAdjacentMonth,
                           'diary-calendar__cell--has': cell.posts.length > 0,
-                          'diary-calendar__cell--today': isToday,
                         },
                       ]}
                       data-date-key={cell.dateKey ?? undefined}
@@ -132,12 +125,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
                           cell.day !== null && (
                             <>
                               <p class="diary-calendar__day-head">
-                                <span
-                                  class:list={[
-                                    'diary-calendar__day-num',
-                                    isToday && 'diary-calendar__day-num--today',
-                                  ]}
-                                >
+                                <span class="diary-calendar__day-num">
                                   {cell.day}
                                 </span>
                               </p>
@@ -162,8 +150,7 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
                         }
                       </div>
                     </td>
-                    );
-                  })}
+                  ))}
                 </tr>
               ))
             }
@@ -172,8 +159,61 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
       </div>
     ))
   }
-  <script is:inline define:vars={{ activitiesCalInitialIndex, calendarRootId: rootId, calendarLabelId: monthLabelId }}>
+  <script
+    is:inline
+    define:vars={{
+      activitiesCalInitialIndex,
+      calendarRootId: rootId,
+      calendarLabelId: monthLabelId,
+      calendarTimeZone: PROFILE_AGE_TIME_ZONE,
+    }}
+  >
     (function () {
+      function calendarYmdPartsInTz(date, timeZone) {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+          timeZone: timeZone,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+        });
+        let y = 0;
+        let m = 0;
+        let d = 0;
+        for (const p of fmt.formatToParts(date)) {
+          if (p.type === 'year') y = Number(p.value);
+          if (p.type === 'month') m = Number(p.value);
+          if (p.type === 'day') d = Number(p.value);
+        }
+        return { y: y, m: m, d: d };
+      }
+
+      function syncActivitiesCalendarToday() {
+        const parts = calendarYmdPartsInTz(new Date(), calendarTimeZone);
+        const todayKey =
+          parts.y +
+          '-' +
+          String(parts.m).padStart(2, '0') +
+          '-' +
+          String(parts.d).padStart(2, '0');
+
+        for (const root of document.querySelectorAll('.diary-calendar-wrap')) {
+          for (const cell of root.querySelectorAll('.diary-calendar__cell--today')) {
+            cell.classList.remove('diary-calendar__cell--today');
+          }
+          for (const dayNum of root.querySelectorAll('.diary-calendar__day-num--today')) {
+            dayNum.classList.remove('diary-calendar__day-num--today');
+          }
+
+          const cell = root.querySelector(
+            '.diary-calendar__cell[data-date-key="' + todayKey + '"]',
+          );
+          if (!cell || cell.classList.contains('diary-calendar__cell--pad')) continue;
+
+          cell.classList.add('diary-calendar__cell--today');
+          cell.querySelector('.diary-calendar__day-num')?.classList.add('diary-calendar__day-num--today');
+        }
+      }
+
       const root = document.getElementById(calendarRootId);
       if (!root) return;
       const panels = Array.from(root.querySelectorAll('[data-activities-panel]'));
@@ -219,6 +259,10 @@ const legendIconItems = Array.from({ length: LEGEND_LOOP_COPIES }, (_, copyIndex
         }
       });
       sync();
+      syncActivitiesCalendarToday();
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') syncActivitiesCalendarToday();
+      });
     })();
   </script>
     </div>
