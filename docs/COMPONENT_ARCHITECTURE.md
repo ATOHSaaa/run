@@ -353,7 +353,7 @@ import photo from '@/assets/images/activities/example.jpg';
 
 | ルート | 用途 |
 |--------|------|
-| `/og/home.png` | トップ（`index.astro`）。青背景にヘッダーブランドを `home-brand-template.ts`（satori）で中央描画。記事 OGP の青帯は `site-header-strip.png` を上部合成 |
+| `/og/home.png` | トップ（`index.astro`）。青背景（`#1d4ed8`）に `site-header-strip.png` を縦中央合成（記事 OGP 上部と同じブランド見た目） |
 | `/og/blog/{slug}.png` | 記事詳細 |
 
 記事 OGP のレイアウト:
