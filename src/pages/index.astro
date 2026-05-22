@@ -4,6 +4,7 @@ import WaveDivider from '@/components/WaveDivider.astro';
 import ActivitiesCalendar from '@/components/ActivitiesCalendar.astro';
 import HomeProfile from '@/components/HomeProfile.astro';
 import HomeBlockHeadScrollReveal from '@/components/HomeBlockHeadScrollReveal.astro';
+import HomeBlockMoreLink from '@/components/HomeBlockMoreLink.astro';
 import HomeGearsOrbit from '@/components/HomeGearsOrbit.astro';
 import PostCard from '@/components/PostCard.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
@@ -95,30 +96,10 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
       }
       {
         tipsPosts.length > 0 && (
-          <p class="home-block__more">
-            <a
-              class="home-block__more-link"
-              href={getBlogCategoryListHref(base, 'Tips')}
-              aria-label="Tips の記事をもっと見る（Tips 一覧へ）"
-            >
-              <span>and more</span>
-              <svg
-                class="home-block__more-arrow"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 12h14m0 0-5-5m5 5-5 5"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </a>
-          </p>
+          <HomeBlockMoreLink
+            href={getBlogCategoryListHref(base, 'Tips')}
+            ariaLabel="Tips の記事一覧へ"
+          />
         )
       }
     </section>
@@ -195,30 +176,11 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
         }
         {
           gearsPosts.length > 0 && (
-            <p class="home-block__more">
-              <a
-                class="home-block__more-link"
-                href={getBlogCategoryListHref(base, 'Gears')}
-                aria-label="Gears の記事をもっと見る（Gears 一覧へ）"
-              >
-                <span>and more</span>
-                <svg
-                  class="home-block__more-arrow"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m0 0-5-5m5 5-5 5"
-                    stroke="currentColor"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </a>
-            </p>
+            <HomeBlockMoreLink
+              href={getBlogCategoryListHref(base, 'Gears')}
+              ariaLabel="Gears の記事一覧へ"
+              class="home-block__more--gears"
+            />
           )
         }
           </div>
@@ -251,6 +213,15 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
       </div>
 
       {SHOW_ACTIVITIES_CALENDAR && <ActivitiesCalendar activitiesPosts={allDiaryPosts} base={base} />}
+
+      {
+        allDiaryPosts.length > 0 && (
+          <HomeBlockMoreLink
+            href={getBlogCategoryListHref(base, 'Activities')}
+            ariaLabel="Activities の記事一覧へ"
+          />
+        )
+      }
 
       {
         !SHOW_ACTIVITIES_CALENDAR &&
@@ -543,14 +514,7 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
     font-size: 0.95rem;
   }
 
-  .home-block__more {
-    margin: var(--space-lg) 0 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .home-block--gears .home-block__more {
+  :global(.home-block__more--gears) {
     margin-top: var(--space-xl);
     margin-bottom: clamp(1.25rem, 4.5vw, 2.25rem);
     position: relative;
@@ -602,43 +566,11 @@ const ogImage = getHomeOgImageUrl(Astro.site ?? Astro.url);
       padding-block: clamp(0.35rem, 1.5vw, 0.55rem) clamp(0.25rem, 1vw, 0.45rem);
     }
 
-    .home-block--gears .home-block__more {
+    :global(.home-block__more--gears) {
       margin-top: var(--space-lg);
       margin-bottom: clamp(0.35rem, 1.5vw, 0.65rem);
       padding-block: 0.15rem;
     }
-  }
-
-  .home-block__more-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--color-text);
-    text-decoration: none;
-    border-bottom: 2px solid currentColor;
-    padding-bottom: 0.16em;
-    box-sizing: border-box;
-  }
-
-  .home-block__more-link:hover {
-    color: var(--color-accent);
-  }
-
-  .home-block__more-link:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-    border-radius: 2px;
-    opacity: 1;
-  }
-
-  .home-block__more-arrow {
-    flex-shrink: 0;
-    width: 1.15em;
-    height: 1.15em;
-    margin-top: 0.06em;
   }
 
   .activities-timeline {

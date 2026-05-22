@@ -1,0 +1,47 @@
+---
+interface Props {
+  href: string;
+  /** スクリーンリーダー用（例: Tips 一覧へ） */
+  ariaLabel: string;
+  /** 親ブロック用の追加クラス（Gears など） */
+  class?: string;
+}
+
+const { href, ariaLabel, class: className } = Astro.props;
+---
+
+<p class:list={['home-block__more', className]}>
+  <a class="home-block__more-link" href={href} aria-label={ariaLabel}>もっと読む →</a>
+</p>
+
+<style>
+  .home-block__more {
+    margin: var(--space-lg) 0 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .home-block__more-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 0.16em;
+    box-sizing: border-box;
+  }
+
+  .home-block__more-link:hover {
+    color: var(--color-accent);
+  }
+
+  .home-block__more-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+</style>
