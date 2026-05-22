@@ -1,4 +1,4 @@
-/** 記事 OGP 画像のパス（`public` 配下ではなく `src/pages/og/blog/` のエンドポイント） */
+/** 記事 OGP 画像のパス（`src/pages/og/blog/` のエンドポイント。PNG 本体は `og-cache/blog/` にキャッシュ） */
 export function getBlogOgImagePath(slug: string): string {
   const base = import.meta.env.BASE_URL;
   const basePath = base.endsWith('/') ? base : `${base}/`;

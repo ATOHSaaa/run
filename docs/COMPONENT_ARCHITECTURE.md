@@ -14,7 +14,7 @@
 | コンテンツ | Content Collections（`src/content/blog/`） |
 | スタイル | `src/styles/global.css` + 各 `.astro` の `<style>`（スコープ付き） |
 | Markdown | `@astrojs/mdx` / `remark-practice-log` / `remark-strip-activity-stat-placeholders` / `rehype-slug` / `rehype-apple-watch-gear-link` / `rehype-site-internal-links-blank` / `rehype-external-links-blank` |
-| OGP 画像 | ビルド時に `satori` + `sharp` で 1200×630 PNG を生成（`src/pages/og/blog/[...slug].png.ts`） |
+| OGP 画像 | ビルド時に `satori` + `sharp` で 1200×630 PNG を生成（`src/pages/og/blog/[...slug].png.ts`）。**初回生成後は `og-cache/blog/` に保存し、記事タイトル（Gears は商品名＋記事タイトル）が変わるまで再利用** |
 | 画像 | `astro:assets` + `sharp`（記事内は `ArticleFigure`） |
 | デプロイ | GitHub Actions。`PUBLIC_SITE_URL=https://run.atohs.me`・`PUBLIC_BASE_PATH=/`（`.github/workflows/deploy.yml`） |
 | サイトマップ | `@astrojs/sitemap`（`3.1.6`・Astro 4 向け）。ビルドで `dist/sitemap-index.xml` と `sitemap-0.xml` を生成。`astro.config.mjs` の `site` に依存 |
@@ -346,7 +346,7 @@ import photo from '@/assets/images/activities/example.jpg';
 
 ### OGP 画像（`src/utils/og-image/`）
 
-ビルド時に 1200×630 PNG を生成する。
+ビルド時に 1200×630 PNG を生成する。**記事 OGP は `og-cache/blog/` にキャッシュ**し、タイトルが前回と同じなら satori をスキップする（Gears は `gearName` と記事 `title` の組み合わせで判定）。キャッシュは **リポジトリにコミット**して CI の再生成を抑える。レイアウトやヘッダー帯を変えたときは該当 slug の PNG と `og-cache/blog/.og-title-cache.json` のエントリを削除するか、タイトルを一時変更して再ビルドする。
 
 - **青帯（ブログ名）**: `src/assets/og/site-header-strip.png`（コミット済み）を `sharp` で記事 OGP 上部に合成。見た目を変えたときは `npm run capture:og-header`（Puppeteer・**devDependencies のみ**。`build` では実行しない）で `/og/header-strip/` から再生成する。
 - **本文（カテゴリ・タグ・記事タイトル等）**: `satori` + `sharp`。フォントは `fonts.ts` で埋め込み（YakuHan は woff2 を `wawoff2` で TTF に展開）。
