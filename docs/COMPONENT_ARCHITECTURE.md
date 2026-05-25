@@ -13,7 +13,7 @@
 | フレームワーク | [Astro](https://astro.build/) 4（`output: static` 相当の静的生成） |
 | コンテンツ | Content Collections（`src/content/blog/`） |
 | スタイル | `src/styles/global.css` + 各 `.astro` の `<style>`（スコープ付き） |
-| Markdown | `@astrojs/mdx` / `remark-practice-log` / `remark-strip-activity-stat-placeholders` / `rehype-slug` / `rehype-apple-watch-gear-link` / `rehype-site-internal-links-blank` / `rehype-external-links-blank` |
+| Markdown | `@astrojs/mdx` / `remark-cjk-friendly` / `remark-practice-log` / `remark-strip-activity-stat-placeholders` / `rehype-slug` / `rehype-apple-watch-gear-link` / `rehype-site-internal-links-blank` / `rehype-external-links-blank` |
 | OGP 画像 | ビルド時に `satori` + `sharp` で 1200×630 PNG を生成（`src/pages/og/blog/[...slug].png.ts`）。**初回生成後は `og-cache/blog/` に保存し、記事タイトル（Gears は商品名＋記事タイトル）が変わるまで再利用** |
 | 画像 | `astro:assets` + `sharp`（記事内は `ArticleFigure`） |
 | デプロイ | GitHub Actions。`PUBLIC_SITE_URL=https://run.atohs.me`・`PUBLIC_BASE_PATH=/`（`.github/workflows/deploy.yml`） |
@@ -340,6 +340,7 @@ import photo from '@/assets/images/activities/example.jpg';
 
 ## Markdown・リンクの慣習
 
+- **太字（`**`）**: CommonMark 単体では `**」**です` や `**（3度）**に` のように、括弧・鉤括弧の直後に続く日本語で認識されないことがある。`astro.config.mjs` の `remark-cjk-friendly` がこれを補正する（記事を書く側でスペースを入れる必要はない）
 - **外部リンク**（`http://` / `https://`）: `rehype-external-links-blank` で `target="_blank"` + `rel="noopener noreferrer"`（Amazon アフィリエイトは `sponsored` を追加）
 - **サイト内リンク**（`/` で始まり `//` ではないパス）: `rehype-site-internal-links-blank` で `target="_blank"`（**Gears 記事 `/gears/` へのリンクは同一タブ**）。記事本文のサイト内リンクは太字にしない（`global.css`）
 - **Apple Watch**: 記事本文で初出の「Apple Watch」を `rehype-apple-watch-gear-link` が `/gears/apple-watch-ultra-2/` へリンク（見出し・既存リンク内・対象 Gears 記事自身は除外）

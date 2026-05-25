@@ -9,6 +9,7 @@ import rehypeAppleWatchGearLink from './rehype-apple-watch-gear-link.mjs';
 import rehypeSiteInternalLinksBlank from './rehype-site-internal-links-blank.mjs';
 import remarkPracticeLog from './remark-practice-log.mjs';
 import remarkStripActivityStatPlaceholders from './remark-strip-activity-stat-placeholders.mjs';
+import remarkCjkFriendly from 'remark-cjk-friendly';
 import { buildTipsGearsRedirects } from './blog-slug.mjs';
 
 // GitHub Pages（Project / User）向け:
@@ -33,7 +34,7 @@ export default defineConfig({
     },
   },
   markdown: {
-    remarkPlugins: [remarkPracticeLog, remarkStripActivityStatPlaceholders],
+    remarkPlugins: [remarkCjkFriendly, remarkPracticeLog, remarkStripActivityStatPlaceholders],
     rehypePlugins: [
       rehypeSlug,
       rehypeAppleWatchGearLink,
