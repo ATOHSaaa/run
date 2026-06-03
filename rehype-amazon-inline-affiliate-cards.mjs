@@ -115,9 +115,11 @@ export default function rehypeAmazonInlineAffiliateCards() {
             href: toAmazonAffiliateUrl(link.href, associateTag),
             productName,
             label,
+            asin,
             imageSrc,
             baseUrl,
             inline: true,
+            placement: 'inline_card',
           }),
         );
       }

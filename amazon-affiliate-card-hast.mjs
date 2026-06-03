@@ -20,9 +20,12 @@ export function getNodePlainText(node) {
  *   href: string;
  *   productName: string;
  *   label: string;
+ *   asin?: string;
  *   imageSrc?: string;
  *   baseUrl: string;
  *   inline?: boolean;
+ *   placement?: string;
+ *   position?: number;
  * }} options
  * @returns {import('hast').Element}
  */
@@ -30,9 +33,12 @@ export function createAmazonAffiliateCardElement({
   href,
   productName,
   label,
+  asin,
   imageSrc,
   baseUrl,
   inline = false,
+  placement,
+  position,
 }) {
   const root = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
   const thumbSrc = imageSrc
@@ -50,6 +56,12 @@ export function createAmazonAffiliateCardElement({
       href,
       target: '_blank',
       rel: ['noopener', 'noreferrer', 'sponsored'],
+      dataAffProgram: 'amazon',
+      dataAffKind: 'card',
+      dataAffPlacement: placement ?? (inline ? 'inline_card' : 'article_end'),
+      dataAffItemId: asin,
+      dataAffItemName: productName,
+      dataAffPosition: typeof position === 'number' ? String(position) : undefined,
     },
     children: [
       {

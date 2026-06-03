@@ -5,6 +5,7 @@ interface Item {
   href: string;
   label: string;
   productName?: string;
+  asin?: string;
   imageSrc?: string;
 }
 
@@ -34,6 +35,11 @@ const root = base.endsWith('/') ? base : `${base}/`;
               href={item.href}
               target="_blank"
               rel="noopener noreferrer sponsored"
+              data-aff-program="amazon"
+              data-aff-kind="sidebar_link"
+              data-aff-placement="sidebar"
+              data-aff-item-id={item.asin}
+              data-aff-item-name={displayName}
             >
               <span class="amazon-affiliate-sidebar__thumb-wrap" aria-hidden="true">
                 <img

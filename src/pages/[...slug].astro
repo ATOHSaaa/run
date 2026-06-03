@@ -153,7 +153,9 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
                       href={aff.href}
                       label={aff.label}
                       productName={aff.productName ?? getGearDisplayName(post.data)}
+                      asin={aff.asin}
                       imageSrc={aff.imageSrc ?? post.data.coverImage}
+                      placement="article_end"
                     />
                   ))}
                 </section>
@@ -201,6 +203,7 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
                       href: aff.href,
                       label: aff.label,
                       productName: aff.productName ?? getGearDisplayName(post.data),
+                      asin: aff.asin,
                       imageSrc: aff.imageSrc ?? post.data.coverImage,
                     }))}
                   />
@@ -464,9 +467,8 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
       gap: 0;
       width: 100%;
       min-width: 0;
-      max-height: var(--article-toc-sticky-max-height);
-      overflow-y: auto;
-      overscroll-behavior: contain;
+      max-height: none;
+      overflow-y: visible;
       box-sizing: border-box;
     }
 
@@ -634,8 +636,7 @@ const ogImage = getBlogOgImageUrl(Astro.site ?? Astro.url, post.slug);
     flex: 1 1 auto;
     min-height: 0;
     min-width: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: visible;
   }
 
   .article-toc__heading {

@@ -5,11 +5,17 @@ interface Props {
   label: string;
   /** カード内の商品名。未指定時は label から推測しないで label を見出しに */
   productName?: string;
+  /** Amazon ASIN（計測・識別用） */
+  asin?: string;
   /** `public/` からの相対パス */
   imageSrc?: string;
+  /** どの枠（計測用。例: article_end / inline_card など） */
+  placement?: string;
+  /** 枠内での並び順（1始まり推奨） */
+  position?: number;
 }
 
-const { href, label, productName, imageSrc } = Astro.props;
+const { href, label, productName, asin, imageSrc, placement = 'article_end', position } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const root = base.endsWith('/') ? base : `${base}/`;
 const thumbSrc = imageSrc ? `${root}${imageSrc.replace(/^\//, '')}` : `${root}gears/placeholder-1.svg`;
@@ -21,6 +27,12 @@ const displayName = productName ?? label;
   href={href}
   target="_blank"
   rel="noopener noreferrer sponsored"
+  data-aff-program="amazon"
+  data-aff-kind="card"
+  data-aff-placement={placement}
+  data-aff-item-id={asin}
+  data-aff-item-name={displayName}
+  data-aff-position={typeof position === 'number' ? String(position) : undefined}
 >
   <span class="amazon-affiliate-card__media" aria-hidden="true">
     <img

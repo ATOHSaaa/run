@@ -1,6 +1,11 @@
 import { loadEnv } from 'vite';
 import { visit } from 'unist-util-visit';
-import { getAmazonAssociateTagFromEnv, isAmazonProductUrl, toAmazonAffiliateUrl } from './amazon-affiliate-url.mjs';
+import {
+  extractAsinFromAmazonUrl,
+  getAmazonAssociateTagFromEnv,
+  isAmazonProductUrl,
+  toAmazonAffiliateUrl,
+} from './amazon-affiliate-url.mjs';
 
 function resolveAssociateTag() {
   const mode = process.env.MODE ?? process.env.NODE_ENV ?? 'development';
@@ -44,9 +49,14 @@ export default function rehypeAmazonAffiliateLinks() {
       const href = hrefString(node.properties.href);
       if (!href || !isAmazonProductUrl(href)) return;
 
+      const asin = extractAsinFromAmazonUrl(href);
       node.properties.href = toAmazonAffiliateUrl(href, associateTag);
       node.properties.target = '_blank';
       node.properties.rel = mergeRel(node.properties.rel, ['noopener', 'noreferrer', 'sponsored']);
+      node.properties['data-aff-program'] = 'amazon';
+      node.properties['data-aff-kind'] = 'text_link';
+      node.properties['data-aff-placement'] = 'body';
+      if (asin) node.properties['data-aff-item-id'] = asin;
     });
   };
 }
